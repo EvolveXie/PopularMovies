@@ -1,6 +1,7 @@
 package com.evolvexie.popularmovies;
 
 import android.os.AsyncTask;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -26,7 +27,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
 
     private RecyclerView mMovieListRecyclerView;
 
@@ -34,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView mErrorMessageDisplay;
 
     private MainRecyclerViewAdapter mMainRecycleViewAdapter;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +44,10 @@ public class MainActivity extends AppCompatActivity {
 
         mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
         mErrorMessageDisplay = (TextView) findViewById(R.id.tv_error_message_display);
+        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_refresh);
+
+        mSwipeRefreshLayout.setColorSchemeResources(R.color.colorAccent,R.color.colorPrimary);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
 
         mMovieListRecyclerView = (RecyclerView) findViewById(R.id.rv_display_movies);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this,2);
@@ -65,6 +71,15 @@ public class MainActivity extends AppCompatActivity {
         mErrorMessageDisplay.setVisibility(View.INVISIBLE);
     }
 
+    @Override
+    public void onRefresh() {
+        mMainRecycleViewAdapter = new MainRecyclerViewAdapter();
+        mMovieListRecyclerView.setAdapter(mMainRecycleViewAdapter);
+
+        showMoviesDataView();
+        new FetchMoviesTask().execute(UrlUtils.GET_POPULAR.replace("API_KEY", KeyPreferences.API_KEY));
+    }
+
     public class FetchMoviesTask extends AsyncTask<String,Void,List<Movie>>{
 
         OkHttpClient okHttpClient = new OkHttpClient();
@@ -75,7 +90,9 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            mLoadingIndicator.setVisibility(View.VISIBLE);
+            if (!mSwipeRefreshLayout.isRefreshing()){
+                mLoadingIndicator.setVisibility(View.VISIBLE);
+            }
         }
 
         @Override
@@ -110,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(List<Movie> movies) {
             super.onPostExecute(movies);
             mLoadingIndicator.setVisibility(View.INVISIBLE);
+            mSwipeRefreshLayout.setRefreshing(false);
             if (movies != null){
                 showMoviesDataView();
                 mMainRecycleViewAdapter.setMovies(movies);
