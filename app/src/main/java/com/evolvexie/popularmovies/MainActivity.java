@@ -37,6 +37,10 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     private MainRecyclerViewAdapter mMainRecycleViewAdapter;
     private SwipeRefreshLayout mSwipeRefreshLayout;
 
+    private final GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 2);
+    private boolean isLoadingMore = false;
+    private int currentPage = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,72 +50,99 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         mErrorMessageDisplay = (TextView) findViewById(R.id.tv_error_message_display);
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_refresh);
 
-        mSwipeRefreshLayout.setColorSchemeResources(R.color.colorAccent,R.color.colorPrimary);
+        mSwipeRefreshLayout.setColorSchemeResources(R.color.colorAccent, R.color.colorPrimary);
         mSwipeRefreshLayout.setOnRefreshListener(this);
 
         mMovieListRecyclerView = (RecyclerView) findViewById(R.id.rv_display_movies);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(this,2);
         mMovieListRecyclerView.setLayoutManager(gridLayoutManager);
         mMovieListRecyclerView.setHasFixedSize(true);
+
+        mMovieListRecyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                int lastVisiableItem = gridLayoutManager.findLastVisibleItemPosition();
+                int totalItemCount = gridLayoutManager.getItemCount();
+                if (lastVisiableItem >= totalItemCount - 4 && dy > 0) {
+                    if (!isLoadingMore) {
+                        String url = UrlUtils.GET_POPULAR.replace("API_KEY", KeyPreferences.API_KEY)
+                                .replace("PAGE", String.valueOf(++currentPage));
+                        new FetchMoviesTask().execute(url,"true");
+                    }
+                }
+            }
+        });
 
         mMainRecycleViewAdapter = new MainRecyclerViewAdapter();
         mMovieListRecyclerView.setAdapter(mMainRecycleViewAdapter);
 
         showMoviesDataView();
-        new FetchMoviesTask().execute(UrlUtils.GET_POPULAR.replace("API_KEY", KeyPreferences.API_KEY));
+        String url = UrlUtils.GET_POPULAR.replace("API_KEY", KeyPreferences.API_KEY)
+                .replace("PAGE", String.valueOf(++currentPage));
+        new FetchMoviesTask().execute(url);
     }
 
-    public void showErrorMessage(){
+    public void showErrorMessage() {
         mMovieListRecyclerView.setVisibility(View.INVISIBLE);
         mErrorMessageDisplay.setVisibility(View.VISIBLE);
     }
 
-    public void showMoviesDataView(){
+    public void showMoviesDataView() {
         mMovieListRecyclerView.setVisibility(View.VISIBLE);
         mErrorMessageDisplay.setVisibility(View.INVISIBLE);
     }
 
     @Override
     public void onRefresh() {
+        currentPage = 0;
         mMainRecycleViewAdapter = new MainRecyclerViewAdapter();
         mMovieListRecyclerView.setAdapter(mMainRecycleViewAdapter);
 
         showMoviesDataView();
-        new FetchMoviesTask().execute(UrlUtils.GET_POPULAR.replace("API_KEY", KeyPreferences.API_KEY));
+        String url = UrlUtils.GET_POPULAR.replace("API_KEY", KeyPreferences.API_KEY)
+                .replace("PAGE", String.valueOf(++currentPage));
+        new FetchMoviesTask().execute(url);
     }
 
-    public class FetchMoviesTask extends AsyncTask<String,Void,List<Movie>>{
+    public class FetchMoviesTask extends AsyncTask<String, Void, List<Movie>> {
 
         OkHttpClient okHttpClient = new OkHttpClient();
         MediaType mediaType = MediaType.parse("application/octet-stream");
-        RequestBody requestBody = RequestBody.create(mediaType,"{}");
+        RequestBody requestBody = RequestBody.create(mediaType, "{}");
         Gson gson = new Gson();
+        boolean isLoadMore = false;
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            if (!mSwipeRefreshLayout.isRefreshing()){
+            if (!mSwipeRefreshLayout.isRefreshing()) {
                 mLoadingIndicator.setVisibility(View.VISIBLE);
             }
         }
 
         @Override
         protected List<Movie> doInBackground(String... params) {
-            if (params.length == 0){
-                return  null;
+            if (params.length == 0) {
+                return null;
             }
             List<Movie> results = new ArrayList<>();
             String url = params[0];
+            if (params.length > 1){
+                isLoadMore = Boolean.parseBoolean(params[1]); //是否是加载更多数据
+            }else{
+                isLoadMore = false;
+            }
             Request request = new Request.Builder()
                     .url(url)
                     .get()
                     .build();
             try {
                 Response response = okHttpClient.newCall(request).execute();
-                if (response.message().equals("OK")){
+                if (response.message().equals("OK")) {
                     String jsonStr = response.body().string();
                     PopularMovie popularMovie = gson.fromJson(jsonStr, PopularMovie.class);
-                    for (Movie movie : popularMovie.getResults()){
+                    currentPage = popularMovie.getPage();
+                    for (Movie movie : popularMovie.getResults()) {
                         results.add(movie);
                     }
                 }
@@ -126,14 +157,26 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         @Override
         protected void onPostExecute(List<Movie> movies) {
             super.onPostExecute(movies);
-            mLoadingIndicator.setVisibility(View.INVISIBLE);
-            mSwipeRefreshLayout.setRefreshing(false);
-            if (movies != null){
-                showMoviesDataView();
-                mMainRecycleViewAdapter.setMovies(movies);
+            if (!isLoadMore){
+                mLoadingIndicator.setVisibility(View.INVISIBLE);
+                mSwipeRefreshLayout.setRefreshing(false);
+                if (movies != null) {
+                    showMoviesDataView();
+                    mMainRecycleViewAdapter.setMovies(movies);
+                } else {
+                    showErrorMessage();
+                }
             }else{
-                showErrorMessage();
+                mLoadingIndicator.setVisibility(View.INVISIBLE);
+                mSwipeRefreshLayout.setRefreshing(false);
+                if (movies != null) {
+                    showMoviesDataView();
+                    mMainRecycleViewAdapter.addMovies(movies);
+                } else {
+                    showErrorMessage();
+                }
             }
+
         }
     }
 }
