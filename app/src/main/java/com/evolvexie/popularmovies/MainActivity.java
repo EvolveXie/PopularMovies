@@ -1,16 +1,22 @@
 package com.evolvexie.popularmovies;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.evolvexie.popularmovies.adapter.MainRecyclerViewAdapter;
+import com.evolvexie.popularmovies.data.CommonPreferences;
 import com.evolvexie.popularmovies.data.KeyPreferences;
 import com.evolvexie.popularmovies.model.Movie;
 import com.evolvexie.popularmovies.model.PopularMovie;
@@ -29,6 +35,7 @@ import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
 
+    private static final String TAG = MainActivity.class.getSimpleName();
     private RecyclerView mMovieListRecyclerView;
 
     private ProgressBar mLoadingIndicator;
@@ -65,8 +72,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 int totalItemCount = gridLayoutManager.getItemCount();
                 if (lastVisiableItem >= totalItemCount - 4 && dy > 0) {
                     if (!isLoadingMore) {
-                        String url = UrlUtils.GET_POPULAR.replace("API_KEY", KeyPreferences.API_KEY)
-                                .replace("PAGE", String.valueOf(++currentPage));
+                        String url = getMoviesUrl();
                         new FetchMoviesTask().execute(url,"true");
                     }
                 }
@@ -77,9 +83,28 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         mMovieListRecyclerView.setAdapter(mMainRecycleViewAdapter);
 
         showMoviesDataView();
-        String url = UrlUtils.GET_POPULAR.replace("API_KEY", KeyPreferences.API_KEY)
-                .replace("PAGE", String.valueOf(++currentPage));
+        String url = getMoviesUrl();
         new FetchMoviesTask().execute(url);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main,menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemId = item.getItemId();
+        switch(itemId){
+            case R.id.action_setting:
+                Intent intent = new Intent(MainActivity.this,SettingsActivity.class);
+                startActivity(intent);
+                break;
+            default:
+                break;
+        }
+        return true;
     }
 
     public void showErrorMessage() {
@@ -99,8 +124,9 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         mMovieListRecyclerView.setAdapter(mMainRecycleViewAdapter);
 
         showMoviesDataView();
-        String url = UrlUtils.GET_POPULAR.replace("API_KEY", KeyPreferences.API_KEY)
-                .replace("PAGE", String.valueOf(++currentPage));
+        Log.d(TAG, "onRefresh: currentPage-->"+currentPage);
+        String url = getMoviesUrl();
+        Log.d(TAG, "onRefresh: currentPage<--"+currentPage);
         new FetchMoviesTask().execute(url);
     }
 
@@ -122,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
         @Override
         protected List<Movie> doInBackground(String... params) {
-            if (params.length == 0) {
+            if (params.length == 0 || isCancelled()) {
                 return null;
             }
             List<Movie> results = new ArrayList<>();
@@ -141,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 if (response.message().equals("OK")) {
                     String jsonStr = response.body().string();
                     PopularMovie popularMovie = gson.fromJson(jsonStr, PopularMovie.class);
-                    currentPage = popularMovie.getPage();
+                    //currentPage = popularMovie.getPage();
                     for (Movie movie : popularMovie.getResults()) {
                         results.add(movie);
                     }
@@ -176,7 +202,21 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                     showErrorMessage();
                 }
             }
-
+            cancel(true);
         }
+    }
+
+    public String getMoviesUrl(){
+        SharedPreferences sharedPreferences = getSharedPreferences(CommonPreferences.SETTING_PREF_NAME,MODE_PRIVATE);
+        String curSortingSetting = sharedPreferences.getString(CommonPreferences.SORTING_WAY,"popular");
+        String url = null;
+        if (curSortingSetting.equals("popular")){
+            url = UrlUtils.GET_POPULAR.replace("API_KEY", KeyPreferences.API_KEY)
+                    .replace("PAGE", String.valueOf(++currentPage));
+        }else if (curSortingSetting.equals("rated")){
+            url = UrlUtils.GET_TOP_RATED.replace("API_KEY", KeyPreferences.API_KEY)
+                    .replace("PAGE", String.valueOf(++currentPage));
+        }
+        return url;
     }
 }

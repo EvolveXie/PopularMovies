@@ -28,7 +28,7 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
     private Context context;
 
     public MainRecyclerViewAdapter() {
-
+        movies = null;
     }
 
     @Override
@@ -81,7 +81,12 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
     }
 
     public void addMovies(List<Movie> movies) {
-        this.movies.addAll(movies);
-        notifyDataSetChanged();
+        if (this.movies == null){
+            this.movies = movies;
+            notifyDataSetChanged();
+        }else {
+            this.movies.addAll(movies);
+            notifyDataSetChanged();
+        }
     }
 }
