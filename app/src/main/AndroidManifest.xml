@@ -22,7 +22,10 @@
             android:name=".SettingsActivity"
             android:label="@string/setting"
             android:parentActivityName=".MainActivity" />
-        <activity android:name=".DetailActivity"></activity>
+        <activity
+            android:name=".DetailActivity"
+            android:label="@string/detail"
+            android:parentActivityName=".MainActivity"/>
     </application>
 
 </manifest>

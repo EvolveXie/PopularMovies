@@ -21,6 +21,7 @@ public class Movie {
     private double popularity;
     @SerializedName("vote_count")
     private int voteCount;
+    @SerializedName("vote_average")
     private String voteAverage;
     @SerializedName("original_title")
     private String originalTitle;

@@ -27,8 +27,18 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
     private List<Movie> movies;
     private Context context;
 
+    private MainRvAdapterClickHandler mClickHandler;
+    public interface MainRvAdapterClickHandler {
+        void onClick(Movie movie);
+    }
+
     public MainRecyclerViewAdapter() {
         movies = null;
+    }
+
+    public MainRecyclerViewAdapter(MainRvAdapterClickHandler clickHandler){
+        movies = null;
+        this.mClickHandler = clickHandler;
     }
 
     @Override
@@ -56,7 +66,7 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
         return movies.size();
     }
 
-    public class MovieViewHolder extends RecyclerView.ViewHolder {
+    public class MovieViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         ImageView mListItemImageView;
         //TextView mListItemTextView;
@@ -65,6 +75,7 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
             super(itemView);
             mListItemImageView = (ImageView) itemView.findViewById(R.id.list_item_movie_image);
             //mListItemTextView = (TextView) itemView.findViewById(R.id.tv_movie_title_display);
+            itemView.setOnClickListener(this);
         }
 
         void bind(int listIndex) {
@@ -72,6 +83,11 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
             // mListItemTextView.setText(movies.get(listIndex).getTitle());
             Picasso.with(context).load(posterPath).into(mListItemImageView);
 
+        }
+
+        @Override
+        public void onClick(View v) {
+            mClickHandler.onClick(movies.get(getAdapterPosition()));
         }
     }
 
@@ -81,10 +97,10 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
     }
 
     public void addMovies(List<Movie> movies) {
-        if (this.movies == null){
+        if (this.movies == null) {
             this.movies = movies;
             notifyDataSetChanged();
-        }else {
+        } else {
             this.movies.addAll(movies);
             notifyDataSetChanged();
         }

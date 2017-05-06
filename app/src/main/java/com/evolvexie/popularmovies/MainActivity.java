@@ -33,7 +33,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
+public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener,MainRecyclerViewAdapter.MainRvAdapterClickHandler {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private RecyclerView mMovieListRecyclerView;
@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             }
         });
 
-        mMainRecycleViewAdapter = new MainRecyclerViewAdapter();
+        mMainRecycleViewAdapter = new MainRecyclerViewAdapter(this);
         mMovieListRecyclerView.setAdapter(mMainRecycleViewAdapter);
 
         showMoviesDataView();
@@ -120,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     @Override
     public void onRefresh() {
         currentPage = 0;
-        mMainRecycleViewAdapter = new MainRecyclerViewAdapter();
+        mMainRecycleViewAdapter = new MainRecyclerViewAdapter(this);
         mMovieListRecyclerView.setAdapter(mMainRecycleViewAdapter);
 
         showMoviesDataView();
@@ -128,6 +128,23 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         String url = getMoviesUrl();
         Log.d(TAG, "onRefresh: currentPage<--"+currentPage);
         new FetchMoviesTask().execute(url);
+    }
+
+    /**
+     * handle Main RecyclerView's click event
+     * @param movie
+     */
+    @Override
+    public void onClick(Movie movie) {
+        Intent intent = new Intent(MainActivity.this,DetailActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        intent.putExtra("title",movie.getTitle());
+        intent.putExtra("backdrop_url",movie.getBackdropPath());
+        intent.putExtra("poster_url",movie.getPosterPath());
+        intent.putExtra("overview",movie.getOverview());
+        intent.putExtra("vote_average",movie.getVoteAverage());
+        intent.putExtra("release_date",movie.getReleaseDate());
+        startActivity(intent);
     }
 
     public class FetchMoviesTask extends AsyncTask<String, Void, List<Movie>> {

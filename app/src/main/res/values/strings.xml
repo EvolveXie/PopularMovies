@@ -78,4 +78,6 @@
     <string name="sorting_way">排序方式</string>
     <string name="sorting_by_popular">欢迎程度</string>
     <string name="sorting_by_rated">评分高低</string>
+    <string name="vote_average">用户评分</string>
+    <string name="detail">详细信息</string>
 </resources>
