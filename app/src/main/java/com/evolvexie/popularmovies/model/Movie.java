@@ -1,12 +1,15 @@
 package com.evolvexie.popularmovies.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.SerializedName;
 
 /**
  * Created by hand on 2017/4/17.
  */
 
-public class Movie {
+public class Movie implements Parcelable {
 
     private int id;
     private String title;
@@ -113,4 +116,53 @@ public class Movie {
     public void setOriginalTitle(String originalTitle) {
         this.originalTitle = originalTitle;
     }
+
+    public Movie() {
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(this.id);
+        dest.writeString(this.title);
+        dest.writeString(this.releaseDate);
+        dest.writeString(this.posterPath);
+        dest.writeString(this.backdropPath);
+        dest.writeString(this.overview);
+        dest.writeByte(this.adult ? (byte) 1 : (byte) 0);
+        dest.writeDouble(this.popularity);
+        dest.writeInt(this.voteCount);
+        dest.writeString(this.voteAverage);
+        dest.writeString(this.originalTitle);
+    }
+
+    protected Movie(Parcel in) {
+        this.id = in.readInt();
+        this.title = in.readString();
+        this.releaseDate = in.readString();
+        this.posterPath = in.readString();
+        this.backdropPath = in.readString();
+        this.overview = in.readString();
+        this.adult = in.readByte() != 0;
+        this.popularity = in.readDouble();
+        this.voteCount = in.readInt();
+        this.voteAverage = in.readString();
+        this.originalTitle = in.readString();
+    }
+
+    public static final Creator<Movie> CREATOR = new Creator<Movie>() {
+        @Override
+        public Movie createFromParcel(Parcel source) {
+            return new Movie(source);
+        }
+
+        @Override
+        public Movie[] newArray(int size) {
+            return new Movie[size];
+        }
+    };
 }

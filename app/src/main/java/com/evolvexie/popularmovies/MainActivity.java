@@ -33,7 +33,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener,MainRecyclerViewAdapter.MainRvAdapterClickHandler {
+public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener, MainRecyclerViewAdapter.MainRvAdapterClickHandler {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private RecyclerView mMovieListRecyclerView;
@@ -47,6 +47,9 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     private final GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 2);
     private boolean isLoadingMore = false;
     private int currentPage = 0;
+    private String curUrl = null;   // a flag that show if sorting wat had been changed in setting
+    private List<Movie> curMovies;
+    private String curSortingWay = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 if (lastVisiableItem >= totalItemCount - 4 && dy > 0) {
                     if (!isLoadingMore) {
                         String url = getMoviesUrl();
-                        new FetchMoviesTask().execute(url,"true");
+                        new FetchMoviesTask().execute(url, "true");
                     }
                 }
             }
@@ -84,21 +87,22 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
         showMoviesDataView();
         String url = getMoviesUrl();
+        curUrl = url;
         new FetchMoviesTask().execute(url);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main,menu);
+        getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
-        switch(itemId){
+        switch (itemId) {
             case R.id.action_setting:
-                Intent intent = new Intent(MainActivity.this,SettingsActivity.class);
+                Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
                 startActivity(intent);
                 break;
             default:
@@ -124,27 +128,48 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         mMovieListRecyclerView.setAdapter(mMainRecycleViewAdapter);
 
         showMoviesDataView();
-        Log.d(TAG, "onRefresh: currentPage-->"+currentPage);
+        Log.d(TAG, "onRefresh: currentPage-->" + currentPage);
         String url = getMoviesUrl();
-        Log.d(TAG, "onRefresh: currentPage<--"+currentPage);
+        Log.d(TAG, "onRefresh: currentPage<--" + currentPage);
         new FetchMoviesTask().execute(url);
     }
 
     /**
      * handle Main RecyclerView's click event
+     *
      * @param movie
      */
     @Override
     public void onClick(Movie movie) {
-        Intent intent = new Intent(MainActivity.this,DetailActivity.class);
+        Intent intent = new Intent(MainActivity.this, DetailActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        intent.putExtra("title",movie.getTitle());
-        intent.putExtra("backdrop_url",movie.getBackdropPath());
-        intent.putExtra("poster_url",movie.getPosterPath());
-        intent.putExtra("overview",movie.getOverview());
-        intent.putExtra("vote_average",movie.getVoteAverage());
-        intent.putExtra("release_date",movie.getReleaseDate());
+        intent.putExtra("movie", movie);
+//        intent.putExtra("title", movie.getTitle());
+//        intent.putExtra("backdrop_url", movie.getBackdropPath());
+//        intent.putExtra("poster_url", movie.getPosterPath());
+//        intent.putExtra("overview", movie.getOverview());
+//        intent.putExtra("vote_average", movie.getVoteAverage());
+//        intent.putExtra("release_date", movie.getReleaseDate());
         startActivity(intent);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        //String url = getMoviesUrl();
+        //if (!url.equals(curUrl) || (curMovies == null || curMovies.size() == 0)) {
+        SharedPreferences sharedPreferences = getSharedPreferences(CommonPreferences.SETTING_PREF_NAME, MODE_PRIVATE);
+        String curSortingSetting = sharedPreferences.getString(CommonPreferences.SORTING_WAY, "popular");
+
+        if ((curSortingWay != null && !curSortingWay.equals(curSortingSetting))  // sorting way had been changed
+                || (curMovies == null || curMovies.size() == 0)) {  // current movie list is null or empty
+            currentPage = 0;
+            mMainRecycleViewAdapter = new MainRecyclerViewAdapter(this);
+            mMovieListRecyclerView.setAdapter(mMainRecycleViewAdapter);
+
+            showMoviesDataView();
+            new FetchMoviesTask().execute(getMoviesUrl());
+        }
     }
 
     public class FetchMoviesTask extends AsyncTask<String, Void, List<Movie>> {
@@ -170,9 +195,9 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             }
             List<Movie> results = new ArrayList<>();
             String url = params[0];
-            if (params.length > 1){
+            if (params.length > 1) {
                 isLoadMore = Boolean.parseBoolean(params[1]); //是否是加载更多数据
-            }else{
+            } else {
                 isLoadMore = false;
             }
             Request request = new Request.Builder()
@@ -200,7 +225,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         @Override
         protected void onPostExecute(List<Movie> movies) {
             super.onPostExecute(movies);
-            if (!isLoadMore){
+            curMovies = movies;
+            if (!isLoadMore) {
                 mLoadingIndicator.setVisibility(View.INVISIBLE);
                 mSwipeRefreshLayout.setRefreshing(false);
                 if (movies != null) {
@@ -209,7 +235,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 } else {
                     showErrorMessage();
                 }
-            }else{
+            } else {
                 mLoadingIndicator.setVisibility(View.INVISIBLE);
                 mSwipeRefreshLayout.setRefreshing(false);
                 if (movies != null) {
@@ -223,14 +249,17 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         }
     }
 
-    public String getMoviesUrl(){
-        SharedPreferences sharedPreferences = getSharedPreferences(CommonPreferences.SETTING_PREF_NAME,MODE_PRIVATE);
-        String curSortingSetting = sharedPreferences.getString(CommonPreferences.SORTING_WAY,"popular");
+    public String getMoviesUrl() {
+        SharedPreferences sharedPreferences = getSharedPreferences(CommonPreferences.SETTING_PREF_NAME, MODE_PRIVATE);
+        String curSortingSetting = sharedPreferences.getString(CommonPreferences.SORTING_WAY, "popular");
+        if (curSortingWay == null) {
+            curSortingWay = curSortingSetting;
+        }
         String url = null;
-        if (curSortingSetting.equals("popular")){
+        if (curSortingSetting.equals("popular")) {
             url = UrlUtils.GET_POPULAR.replace("API_KEY", KeyPreferences.API_KEY)
                     .replace("PAGE", String.valueOf(++currentPage));
-        }else if (curSortingSetting.equals("rated")){
+        } else if (curSortingSetting.equals("rated")) {
             url = UrlUtils.GET_TOP_RATED.replace("API_KEY", KeyPreferences.API_KEY)
                     .replace("PAGE", String.valueOf(++currentPage));
         }

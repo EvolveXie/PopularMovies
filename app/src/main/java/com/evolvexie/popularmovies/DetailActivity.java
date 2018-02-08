@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.evolvexie.popularmovies.model.Movie;
 import com.evolvexie.popularmovies.utils.UrlUtils;
 import com.squareup.picasso.Picasso;
 
@@ -39,29 +40,21 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private void initData(Intent fromIntent){
-        if (fromIntent.hasExtra("backdrop_url")){
-            String backdropPath = UrlUtils.IMAGE_BASE_URL + fromIntent.getStringExtra("backdrop_url");
+        if (fromIntent.hasExtra("movie")){
+            Movie movie = fromIntent.getParcelableExtra("movie");
+            String backdropPath = UrlUtils.IMAGE_BASE_URL + movie.getBackdropPath();
             Picasso.with(this)
                     .load(backdropPath)
                     .into(mBackdropImageView);
-        }
-        if (fromIntent.hasExtra("title")){
-            mTitleTextView.setText(fromIntent.getStringExtra("title"));
-        }
-        if (fromIntent.hasExtra("poster_url")){
-            String posterPath = UrlUtils.IMAGE_BASE_URL + fromIntent.getStringExtra("poster_url");
+            mTitleTextView.setText(movie.getTitle());
+            String posterPath = UrlUtils.IMAGE_BASE_URL + movie.getPosterPath();
             Picasso.with(this)
                     .load(posterPath)
                     .into(mPosterImageView);
-        }
-        if (fromIntent.hasExtra("overview")){
             mOverviewTextView.setText(fromIntent.getStringExtra("overview"));
-        }
-        if (fromIntent.hasExtra("vote_average")){
             mVoteAverageTextView.setText(fromIntent.getStringExtra("vote_average"));
-        }
-        if (fromIntent.hasExtra("release_date")){
             mReleaseDateTextView.setText(fromIntent.getStringExtra("release_date"));
         }
+
     }
 }
