@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
     <LinearLayout
@@ -20,16 +21,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@android:color/black"
-            android:textSize="32sp"
+            android:textSize="@dimen/movie_title_size"
             android:paddingTop="8dp"
             android:paddingBottom="8dp"
+            android:text="MY TEXT MOVIE TITLE"
             />
         <TextView
             android:id="@+id/tv_movie_release_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="- -"
-            android:textSize="20sp"
+            android:textSize="@dimen/release_date_size"
             />
         <LinearLayout
             android:layout_width="wrap_content"
@@ -46,12 +48,12 @@
                 android:textAlignment="center"
                 android:paddingTop="8dp"
                 android:textColor="@android:color/black"
-                android:textSize="24sp"/>
+                android:textSize="@dimen/movie_vote_average_size"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/vote_average"
-                android:textSize="16sp"/>
+                android:textSize="@dimen/text_size_16"/>
         </LinearLayout>
         <TextView
             android:id="@+id/tv_movie_overview"
@@ -59,7 +61,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp"
-            android:textSize="16sp"
+            android:textSize="@dimen/text_size_16"
             android:fontFamily="monospace"
             android:textColor="@android:color/black"
             />
