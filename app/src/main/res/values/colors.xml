@@ -3,4 +3,5 @@
     <color name="colorPrimary">#FFD700</color>
     <color name="colorPrimaryDark">#FFC125</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="sorting_way_color">#00CD00</color>
 </resources>

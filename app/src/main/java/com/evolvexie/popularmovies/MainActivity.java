@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -36,13 +38,17 @@ import okhttp3.Response;
 public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener, MainRecyclerViewAdapter.MainRvAdapterClickHandler {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    private RecyclerView mMovieListRecyclerView;
+    @BindView(R.id.rv_display_movies)
+    RecyclerView mMovieListRecyclerView;
 
-    private ProgressBar mLoadingIndicator;
-    private TextView mErrorMessageDisplay;
+    @BindView(R.id.pb_loading_indicator)
+    ProgressBar mLoadingIndicator;
+    @BindView(R.id.tv_error_message_display)
+    TextView mErrorMessageDisplay;
 
     private MainRecyclerViewAdapter mMainRecycleViewAdapter;
-    private SwipeRefreshLayout mSwipeRefreshLayout;
+    @BindView(R.id.srl_refresh)
+    SwipeRefreshLayout mSwipeRefreshLayout;
 
     private final GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 2);
     private boolean isLoadingMore = false;
@@ -55,15 +61,16 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
 
-        mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
-        mErrorMessageDisplay = (TextView) findViewById(R.id.tv_error_message_display);
-        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_refresh);
+//        mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
+//        mErrorMessageDisplay = (TextView) findViewById(R.id.tv_error_message_display);
+//        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_refresh);
 
         mSwipeRefreshLayout.setColorSchemeResources(R.color.colorAccent, R.color.colorPrimary);
         mSwipeRefreshLayout.setOnRefreshListener(this);
 
-        mMovieListRecyclerView = (RecyclerView) findViewById(R.id.rv_display_movies);
+        //mMovieListRecyclerView = (RecyclerView) findViewById(R.id.rv_display_movies);
         mMovieListRecyclerView.setLayoutManager(gridLayoutManager);
         mMovieListRecyclerView.setHasFixedSize(true);
 
@@ -144,12 +151,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         Intent intent = new Intent(MainActivity.this, DetailActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         intent.putExtra("movie", movie);
-//        intent.putExtra("title", movie.getTitle());
-//        intent.putExtra("backdrop_url", movie.getBackdropPath());
-//        intent.putExtra("poster_url", movie.getPosterPath());
-//        intent.putExtra("overview", movie.getOverview());
-//        intent.putExtra("vote_average", movie.getVoteAverage());
-//        intent.putExtra("release_date", movie.getReleaseDate());
         startActivity(intent);
     }
 
@@ -157,13 +158,13 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     protected void onStart() {
         super.onStart();
         //String url = getMoviesUrl();
-        //if (!url.equals(curUrl) || (curMovies == null || curMovies.size() == 0)) {
         SharedPreferences sharedPreferences = getSharedPreferences(CommonPreferences.SETTING_PREF_NAME, MODE_PRIVATE);
         String curSortingSetting = sharedPreferences.getString(CommonPreferences.SORTING_WAY, "popular");
 
         if ((curSortingWay != null && !curSortingWay.equals(curSortingSetting))  // sorting way had been changed
                 || (curMovies == null || curMovies.size() == 0)) {  // current movie list is null or empty
             currentPage = 0;
+            curSortingWay = null; // when curSortingWay is null,it would change to new sortingWar in getMoviesUrl() method
             mMainRecycleViewAdapter = new MainRecyclerViewAdapter(this);
             mMovieListRecyclerView.setAdapter(mMainRecycleViewAdapter);
 

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="movie_title_size">32sp</dimen>
+    <dimen name="release_date_size">20sp</dimen>
+    <dimen name="movie_vote_average_size">24sp</dimen>
+    <dimen name="text_size_16">16sp</dimen>
+    <dimen name="error_msg_size">20sp</dimen>
+    <dimen name="sorting_way_text_size">20sp</dimen>
+</resources>

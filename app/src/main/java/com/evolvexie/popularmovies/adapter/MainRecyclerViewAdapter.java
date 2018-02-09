@@ -1,7 +1,9 @@
 package com.evolvexie.popularmovies.adapter;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +15,7 @@ import com.evolvexie.popularmovies.R;
 import com.evolvexie.popularmovies.model.Movie;
 import com.evolvexie.popularmovies.utils.UrlUtils;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Transformation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +29,7 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
     private static final String TAG = MainRecyclerViewAdapter.class.getSimpleName();
     private List<Movie> movies;
     private Context context;
+    private int width = 0; // screen width
 
     private MainRvAdapterClickHandler mClickHandler;
     public interface MainRvAdapterClickHandler {
@@ -44,6 +48,9 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
     @Override
     public MovieViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         context = parent.getContext();
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+        width = displayMetrics.widthPixels;
+
         int layoutIdForListItem = R.layout.layout_movie_list_item;
         LayoutInflater layoutInflater = LayoutInflater.from(context);
         boolean shouldAttachToParentImmediately = false;
@@ -81,8 +88,34 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
         void bind(int listIndex) {
             String posterPath = UrlUtils.IMAGE_BASE_URL + movies.get(listIndex).getPosterPath();
             // mListItemTextView.setText(movies.get(listIndex).getTitle());
-            Picasso.with(context).load(posterPath).into(mListItemImageView);
+            Transformation transformation = new Transformation() {
+                @Override
+                public Bitmap transform(Bitmap source) {
+                    if (source.getWidth() == 0) {
+                        return source;
+                    }
+                    int imgWidth = source.getWidth();
+                    int imgHeight = source.getHeight()* (width/2)/imgWidth;
+                    Bitmap result = source.createScaledBitmap(source, width/2, imgHeight,false);
+                    if (source != result){
+                        source.recycle();
+                    }else {
+                        return source;
+                    }
+                    return result;
+                }
 
+                @Override
+                public String key() {
+                    return "transformation";
+                }
+            };
+
+            Picasso.with(context).load(posterPath)
+                    .transform(transformation)
+                    .placeholder(R.mipmap.loading)
+                    .error(R.mipmap.ic_error)
+                    .into(mListItemImageView);
         }
 
         @Override

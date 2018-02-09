@@ -24,7 +24,8 @@
             android:textSize="@dimen/movie_title_size"
             android:paddingTop="8dp"
             android:paddingBottom="8dp"
-            android:text="MY TEXT MOVIE TITLE"
+            tools:text="MY TEXT MOVIE TITLE"
+            android:text="origin text"
             />
         <TextView
             android:id="@+id/tv_movie_release_date"
@@ -69,6 +70,7 @@
             android:id="@+id/iv_poster"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:scaleType="centerCrop"
             />
 
