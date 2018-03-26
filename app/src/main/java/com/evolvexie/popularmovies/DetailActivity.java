@@ -9,22 +9,37 @@ import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.ScrollView;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.evolvexie.popularmovies.data.KeyPreferences;
 import com.evolvexie.popularmovies.model.Movie;
 import com.evolvexie.popularmovies.model.MovieDetail;
+import com.evolvexie.popularmovies.model.MovieTrailer;
+import com.evolvexie.popularmovies.model.Video;
 import com.evolvexie.popularmovies.utils.NetUtils;
 import com.evolvexie.popularmovies.utils.UrlUtils;
 import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class DetailActivity extends AppCompatActivity {
+public class DetailActivity extends AppCompatActivity implements View.OnClickListener {
 
     @BindView(R.id.tv_movie_title)
     TextView mTitleTextView;
@@ -43,9 +58,16 @@ public class DetailActivity extends AppCompatActivity {
     TextView mMovieRuntimeTextView;
     @BindView(R.id.tv_movie_genre)
     TextView mMovieGenreTextView;
+    @BindView(R.id.pb_loading_youtobe)
+    ProgressBar mLoadingYoutobe;
+    @BindView(R.id.lv_trailer_list)
+    ListView mTrailerList;
+    @BindView(R.id.sv_detail_scroll)
+    ScrollView mScrollView;
 
     private int width; // screen width
     private int movieId;
+    private static Context mContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,10 +77,11 @@ public class DetailActivity extends AppCompatActivity {
         Intent fromIntent = getIntent();
         DisplayMetrics displayMetrics = this.getResources().getDisplayMetrics();
         width = displayMetrics.widthPixels;
-
+        mContext = this;
         initData(fromIntent);
         // 加载电影详情数据
         new LoadDetailTask().execute(getDetailUrl(movieId));
+        new LoadTrailerTask().execute(getTrailerUrl());
     }
 
     private void initData(Intent fromIntent){
@@ -105,7 +128,8 @@ public class DetailActivity extends AppCompatActivity {
                     .into(mPosterImageView);
             mOverviewTextView.setText(movie.getOverview());
             mVoteAverageTextView.setText(movie.getVoteAverage());
-            mReleaseDateTextView.setText(getResources().getString(R.string.label_release_date)+movie.getReleaseDate());
+            mReleaseDateTextView.setText(getResources().getString(R.string.label_release_date)
+                    +" "+movie.getReleaseDate());
         }
 
     }
@@ -131,6 +155,24 @@ public class DetailActivity extends AppCompatActivity {
                 .replace("MOVIE_ID",String.valueOf(movieId));
     }
 
+    public String getTrailerUrl(){
+        return UrlUtils.GET_MOVIE_VIDEO.replace("API_KEY",KeyPreferences.API_KEY)
+                .replace("MOVIE_ID",String.valueOf(movieId));
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.iv_youtobe_player:
+                String url = UrlUtils.GET_MOVIE_VIDEO.replace("API_KEY",KeyPreferences.API_KEY)
+                        .replace("MOVIE_ID",String.valueOf(movieId));
+                new LoadTrailerTask().execute(url);
+                break;
+            default:
+                break;
+        }
+    }
+
     private class LoadDetailTask extends AsyncTask<String,Integer,MovieDetail> {
 
         @Override
@@ -145,14 +187,69 @@ public class DetailActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(MovieDetail movieDetail) {
             if (movieDetail != null) {
-                mMovieRuntimeTextView.setText(getResources().getString(R.string.label_runtime)
+                mMovieRuntimeTextView.setText(getResources().getString(R.string.label_runtime)+" "
                         +String.valueOf(movieDetail.getRuntime())
                         +getResources().getString(R.string.label_runtime_unit));
-                mMovieGenreTextView.setText(getResources().getString(R.string.label_genre)
+                mMovieGenreTextView.setText(getResources().getString(R.string.label_genre)+" "
                         +movieDetail.getGenresStr());
             }
         }
     }
 
+    private class LoadTrailerTask extends AsyncTask<String,Void,MovieTrailer>{
 
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mLoadingYoutobe.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        protected MovieTrailer doInBackground(String... params) {
+            String url = params[0];
+            String jsonStr = NetUtils.get(url);
+            Gson gson= new Gson();
+            MovieTrailer movieTrailer = gson.fromJson(jsonStr,MovieTrailer.class);
+            return movieTrailer;
+        }
+
+        @Override
+        protected void onPostExecute(MovieTrailer movieTrailer) {
+            if (movieTrailer == null || movieTrailer.getVideos().size() == 0) {
+                Toast.makeText(mContext,"该影片暂未有预告片",Toast.LENGTH_SHORT).show();
+            }else {
+                //watchYoutubeVideo(DetailActivity.this,movieTrailer.getVideos().get(0).getKey());
+                List<Map<String,Object>> dataList = new ArrayList<>();
+                for (Video video:movieTrailer.getVideos()) {
+                    Map<String,Object> data = new HashMap<>();
+                    data.put("trailerName",video.getName());
+                    data.put("trailerKey",video.getKey());
+                    dataList.add(data);
+                }
+                mTrailerList.setAdapter(new SimpleAdapter(
+                        mContext,
+                        dataList,
+                        R.layout.layout_movie_trailer_list_item,
+                        new String[]{"trailerName","trailerKey"},
+                        new int[]{R.id.tv_list_item_trailer_name,R.id.tv_list_item_trailer_key}));
+                mTrailerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        TextView trailerKeyTextView = (TextView) view.findViewById(R.id.tv_list_item_trailer_key);
+                        String key = trailerKeyTextView.getText().toString();
+                        watchYoutubeVideo(mContext,key);
+                    }
+                });
+                // 解决滑动事件冲突
+                mTrailerList.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View v, MotionEvent event) {
+                        mScrollView.requestDisallowInterceptTouchEvent(true);
+                        return false;
+                    }
+                });
+            }
+            mLoadingYoutobe.setVisibility(View.INVISIBLE);
+        }
+    }
 }

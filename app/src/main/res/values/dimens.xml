@@ -11,4 +11,5 @@
     <dimen name="movie_detail_size">12sp</dimen>
     <dimen name="text_user_vote_size">12sp</dimen>
     <dimen name="text_vote_count_size">8sp</dimen>
+    <dimen name="lv_trailer_list_height">160dp</dimen>
 </resources>

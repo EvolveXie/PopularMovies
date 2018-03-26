@@ -13,7 +13,7 @@ public class UrlUtils {
     /**
      * 获取电影预告片
      */
-    public static final String GET_MOVIE_VIDEO = "https://api.themoviedb.org/3/movie/MOVIE_ID/videos?api_key=API_KEY&language=zh-cn";
+    public static final String GET_MOVIE_VIDEO = "https://api.themoviedb.org/3/movie/MOVIE_ID/videos?api_key=API_KEY&language=en_US";
     /**
      * youtobe 基本视频链接APP
      */

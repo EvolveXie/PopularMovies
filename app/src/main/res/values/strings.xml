@@ -82,9 +82,9 @@
     <string name="detail">详细信息</string>
     <string name="refresh_tip">请下拉刷新数据</string>
     <string name="overview_title">简介</string>
-    <string name="trailer_label_text">电影预告片</string>
-    <string name="label_release_date">上映日期：</string>
-    <string name="label_genre">类型：</string>
-    <string name="label_runtime">片长：</string>
+    <string name="label_trailer_tip">电影预告片: </string>
+    <string name="label_release_date">上映日期: </string>
+    <string name="label_genre">类型: </string>
+    <string name="label_runtime">片长: </string>
     <string name="label_runtime_unit">分钟</string>
 </resources>
