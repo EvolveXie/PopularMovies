@@ -62,7 +62,11 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
     @Override
     public void onBindViewHolder(MovieViewHolder holder, int position) {
         Log.d(TAG, "onBindViewHolder: " + position);
-        holder.bind(position);
+        //holder.setIsRecyclable(false);
+        // 设置tag，在holder被回收时要取消后台图片加载
+        holder.mListItemImageView.setTag(movies.get(holder.getAdapterPosition()).getPosterPath());
+        holder.bind(holder.getAdapterPosition());
+
     }
 
     @Override
@@ -110,11 +114,11 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
                     return "transformation";
                 }
             };
-
             Picasso.with(context).load(posterPath)
                     .transform(transformation)
                     .placeholder(R.mipmap.loading)
                     .error(R.mipmap.ic_error)
+                    .tag(movies.get(getAdapterPosition()).getPosterPath())
                     .into(mListItemImageView);
         }
 
@@ -122,6 +126,12 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
         public void onClick(View v) {
             mClickHandler.onClick(movies.get(getAdapterPosition()));
         }
+    }
+
+    @Override
+    public void onViewRecycled(MovieViewHolder holder) {
+        super.onViewRecycled(holder);
+        Picasso.with(context).cancelTag(holder.mListItemImageView.getTag());
     }
 
     public void setMovies(List<Movie> movies) {
@@ -137,5 +147,7 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
             this.movies.addAll(movies);
             notifyDataSetChanged();
         }
+        Log.d(TAG, "addMovies: #####################"+movies.size());
+        Log.d(TAG, "addMovies: #####################"+this.movies.size());
     }
 }

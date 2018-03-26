@@ -11,7 +11,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity" android:launchMode="singleTop">
+        <activity
+            android:name=".MainActivity"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -22,6 +24,7 @@
             android:name=".SettingsActivity"
             android:label="@string/setting"
             android:parentActivityName=".MainActivity">
+
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -31,11 +34,16 @@
             android:name=".DetailActivity"
             android:label="@string/detail"
             android:parentActivityName=".MainActivity">
+
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.evolvexie.popularmovies.MainActivity" />
         </activity>
+        <provider
+            android:authorities="com.evolvexie.popularmovies"
+            android:name=".data.MoviesProvider"
+            android:exported="false"/>
     </application>
 
 </manifest>
