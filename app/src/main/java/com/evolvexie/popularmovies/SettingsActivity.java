@@ -1,6 +1,14 @@
 package com.evolvexie.popularmovies;
 
+import android.content.ActivityNotFoundException;
+import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -8,19 +16,28 @@ import android.widget.LinearLayout;
 import android.widget.RadioButton;
 
 import com.evolvexie.popularmovies.data.CommonPreferences;
+import com.evolvexie.popularmovies.model.MovieDetail;
+import com.evolvexie.popularmovies.utils.NetUtils;
+import com.evolvexie.popularmovies.utils.UrlUtils;
+import com.google.gson.Gson;
 
-public class SettingsActivity extends AppCompatActivity implements View.OnClickListener{
+import java.net.URL;
 
-    private RadioButton mSetSortingByPopular;
-    private RadioButton mSetSortingByRated;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
+public class SettingsActivity extends AppCompatActivity implements View.OnClickListener {
+
+    @BindView(R.id.rb_popular)
+    RadioButton mSetSortingByPopular;
+    @BindView(R.id.rb_rated)
+    RadioButton mSetSortingByRated;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
-
-        mSetSortingByPopular = (RadioButton) findViewById(R.id.rb_popular);
-        mSetSortingByRated = (RadioButton) findViewById(R.id.rb_rated);
+        ButterKnife.bind(this);
 
         SharedPreferences sharedPreferences = getSharedPreferences(CommonPreferences.SETTING_PREF_NAME,MODE_PRIVATE);
         String curSortingSetting = sharedPreferences.getString(CommonPreferences.SORTING_WAY,"popular");
@@ -63,4 +80,5 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         editor.putString(key,value);
         editor.apply();
     }
+
 }
