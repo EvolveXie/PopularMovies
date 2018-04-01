@@ -6,19 +6,29 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.view.ViewCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -47,7 +57,8 @@ import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener,
         MainRecyclerViewAdapter.MainRvAdapterClickHandler,
-        LoaderManager.LoaderCallbacks<List<Movie>>{
+        LoaderManager.LoaderCallbacks<List<Movie>>,
+        NavigationView.OnNavigationItemSelectedListener{
 
     private static final String TAG = MainActivity.class.getSimpleName();
     // AsyncTaskLoader to loading movies data from internet
@@ -75,7 +86,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             MoviesContract.MoviesEntry.COLUMN_BACKDROP_PATH,
             MoviesContract.MoviesEntry.COLUMN_VOTE_AVERAGE,
             MoviesContract.MoviesEntry.COLUMN_VOTE_COUNT,
-            MoviesContract.MoviesEntry.COLUMN_OVERVIEW
+            MoviesContract.MoviesEntry.COLUMN_OVERVIEW,
+            MoviesContract.MoviesEntry.COLUMN_IS_FAVOURITE,
     };
     public static final int INDEX_COLUMN_MOVIE_ID = 0;
     public static final int INDEX_COLUMN_POSTER_PATH = 1;
@@ -87,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     public static final int INDEX_COLUMN_VOTE_AVERAGE = 7;
     public static final int INDEX_COLUMN_VOTE_COUNT = 8;
     public static final int INDEX_COLUMN_COLUMN_OVERVIEW = 9;
+    public static final int INDEX_COLUMN_IS_FAVOURITE = 10;
 
     // TODO 快速下划显示前面图片的时候，由于占位的图片比较小，recycleView的位置已经到第一了，
     // 因而图片加载出来后迅速显示了第一条数据，用户感觉是跳跃过去，并且看起来屏幕闪烁。
@@ -107,13 +120,24 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     SwipeRefreshLayout mSwipeRefreshLayout;
     @BindView(R.id.tv_show_refresh_tip)
     TextView mRefreshTipDisplay;
+    @BindView(R.id.main_toolbar)
+    Toolbar mToolbar;
+    @BindView(R.id.main_drawer)
+    DrawerLayout mDrawerLayout;
+    @BindView(R.id.nav_drawer)
+    NavigationView mNavigationView;
 
+    private ActionBarDrawerToggle drawerToggle;
     private final GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 2);
     private boolean isLoadingMore = false; // 标志现在是否正在进行上划加载更多(防止多次上划手势而启动了多个后台线程)
     private int currentPage = 0;
     private String curUrl = null;   // a flag that show if sorting wat had been changed in setting
     private List<Movie> curMovies = new ArrayList<>();
     private String curSortingWay = null;
+    // 当前展示的是普通电影列表还是显示的我的收藏的列表
+    private int curShowing;
+    private static final int SHOWING_MOVIES = 0;
+    private static final int SHOWING_FAVOURITE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,14 +145,18 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-//        mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
-//        mErrorMessageDisplay = (TextView) findViewById(R.id.tv_error_message_display);
-//        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_refresh);
+        setSupportActionBar(mToolbar);
+        getSupportActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayShowTitleEnabled(true);
+        drawerToggle = new ActionBarDrawerToggle(this,
+                mDrawerLayout,mToolbar,R.string.drawer_open,R.string.drawer_close);
+        mDrawerLayout.setDrawerListener(drawerToggle);
+
+        mNavigationView.setNavigationItemSelectedListener(this);
 
         mSwipeRefreshLayout.setColorSchemeResources(R.color.colorAccent, R.color.colorPrimary);
         mSwipeRefreshLayout.setOnRefreshListener(this);
 
-        //mMovieListRecyclerView = (RecyclerView) findViewById(R.id.rv_display_movies);
         mMovieListRecyclerView.setLayoutManager(gridLayoutManager);
         mMovieListRecyclerView.setHasFixedSize(true);
 
@@ -161,6 +189,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         mMainRecycleViewAdapter = new MainRecyclerViewAdapter(this);
         mMovieListRecyclerView.setAdapter(mMainRecycleViewAdapter);
 
+        curShowing = SHOWING_MOVIES;
         showMoviesDataView();
 
     }
@@ -203,8 +232,14 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
         showMoviesDataView();
         Log.d(TAG, "onRefresh: currentPage-->" + currentPage);
-        isLoadingMore = false;
-        fetchMovieDatas(MOVIES_INTERNET_LOADER,false);
+        if (curShowing == SHOWING_FAVOURITE){
+            currentPage = 0;
+            curMovies.clear();
+            fetchMovieDatas(MOVIES_CURSOR_LOADER,false);
+        }else {
+            isLoadingMore = false;
+            fetchMovieDatas(MOVIES_INTERNET_LOADER,false);
+        }
         Log.d(TAG, "onRefresh: currentPage<--" + currentPage);
     }
 
@@ -316,6 +351,9 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 showErrorMessage();
             }
         }
+        if (mDrawerLayout.isDrawerOpen(mNavigationView)){
+            mDrawerLayout.closeDrawer(mNavigationView);
+        }
         Log.d(TAG, "onLoadFinished: ####################curMovies-Size:"+curMovies.size());
         if (isLoadFromInternet && movies != null) {
             ContentValues[] contentValues = new ContentValues[movies.size()];
@@ -405,10 +443,14 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         }
         if (curSortingWay.equals("popular")){ // 取出按热度查询的数据，并且按热度降序排序
             sortOrder = MoviesContract.MoviesEntry.COLUMN_POPULARITY + " DESC";
-            selection = MoviesContract.MoviesEntry.COLUMN_SORTING_WAR + " = ?";
-            selectionArgs = new String[]{curSortingWay};
         }else if(curSortingWay.equals("rated")) { // 取出按评分查询的数据，并且按评分降序排序
             sortOrder = MoviesContract.MoviesEntry.COLUMN_VOTE_AVERAGE + " DESC";
+        }
+        if (curShowing == SHOWING_FAVOURITE) {
+            selection = MoviesContract.MoviesEntry.COLUMN_SORTING_WAR + " = ? AND "
+                    + MoviesContract.MoviesEntry.COLUMN_IS_FAVOURITE + " = ?";
+            selectionArgs = new String[]{curSortingWay,"Y"};
+        }else {
             selection = MoviesContract.MoviesEntry.COLUMN_SORTING_WAR + " = ?";
             selectionArgs = new String[]{curSortingWay};
         }
@@ -430,6 +472,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             movie.setVoteCount(cursor.getInt(INDEX_COLUMN_VOTE_COUNT));
             movie.setPosterPath(cursor.getString(INDEX_COLUMN_POSTER_PATH));
             movie.setReleaseDate(cursor.getString(INDEX_COLUMN_RELEASE_DATE));
+            movie.setIsFavourite(cursor.getString(INDEX_COLUMN_IS_FAVOURITE));
             results.add(movie);
         }
         return results;
@@ -468,5 +511,35 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         }else {
             loaderManager.restartLoader(loaderId,queryBundle,this);
         }
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        mDrawerLayout.closeDrawer(Gravity.START);
+        switch (item.getItemId()){
+            case R.id.action_movies: //侧边栏选择电影列表
+                if (curShowing != SHOWING_MOVIES){
+                    currentPage = 0;
+                    curShowing = SHOWING_MOVIES;
+                    curMovies.clear();
+                    fetchMovieDatas(MOVIES_CURSOR_LOADER,false);
+                }
+                break;
+            case R.id.action_favourites: //选择收藏列表
+                if (curShowing != SHOWING_FAVOURITE){
+                    currentPage = 0;
+                    curShowing = SHOWING_FAVOURITE;
+                    curMovies.clear();
+                    fetchMovieDatas(MOVIES_CURSOR_LOADER,false);
+                }
+                break;
+            case R.id.action_drawer_setting: //选择设置页面
+                Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivity(intent);
+                break;
+            default:
+                break;
+        }
+        return true;
     }
 }

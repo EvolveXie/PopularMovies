@@ -29,6 +29,8 @@ public class Movie implements Parcelable {
     @SerializedName("original_title")
     private String originalTitle;
 
+    private String isFavourite;
+
     public int getId() {
         return id;
     }
@@ -117,6 +119,14 @@ public class Movie implements Parcelable {
         this.originalTitle = originalTitle;
     }
 
+    public String getIsFavourite() {
+        return isFavourite;
+    }
+
+    public void setIsFavourite(String isFavourite) {
+        this.isFavourite = isFavourite;
+    }
+
     public Movie() {
     }
 
@@ -138,6 +148,7 @@ public class Movie implements Parcelable {
         dest.writeInt(this.voteCount);
         dest.writeString(this.voteAverage);
         dest.writeString(this.originalTitle);
+        dest.writeString(this.isFavourite);
     }
 
     protected Movie(Parcel in) {
@@ -152,6 +163,7 @@ public class Movie implements Parcelable {
         this.voteCount = in.readInt();
         this.voteAverage = in.readString();
         this.originalTitle = in.readString();
+        this.isFavourite = in.readString();
     }
 
     public static final Creator<Movie> CREATOR = new Creator<Movie>() {

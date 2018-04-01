@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#FFD700</color>
-    <color name="colorPrimaryDark">#FFC125</color>
-    <color name="colorAccent">#FF4081</color>
+    <!--<color name="colorPrimary">#FFD700</color>-->
+    <!--<color name="colorPrimaryDark">#FFC125</color>-->
+    <!--<color name="colorAccent">#FF4081</color>-->
+    <color name="colorPrimary">#607D8B</color>
+    <color name="colorPrimaryDark">#34515e</color>
+    <color name="colorAccent">#8eacbb</color>
+    
+    <color name="colorSecondary">#ff9800</color>
+    <color name="colorSecondaryDark">#c66900</color>
+    <color name="colorSecondaryAccent">#ffc947</color>
+    
     <color name="sorting_way_color">#00CD00</color>
+    <color name="colorOpenReviewTvGreen">#00CD00</color>
 </resources>

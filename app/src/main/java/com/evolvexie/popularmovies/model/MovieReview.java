@@ -1,22 +1,31 @@
 package com.evolvexie.popularmovies.model;
 
-
-import com.evolvexie.popularmovies.model.Movie;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
 /**
- * Created by hand on 2017/4/17.
+ * Created by hand on 2018/3/27.
  */
 
-public class PopularMovie {
+public class MovieReview {
+
+    private int id;
     private int page;
-    private List<Movie> results;
+    @SerializedName("results")
+    private List<Review> reviews;
     @SerializedName("total_results")
     private int totalResults;
     @SerializedName("total_pages")
     private int totalPages;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public int getPage() {
         return page;
@@ -26,12 +35,12 @@ public class PopularMovie {
         this.page = page;
     }
 
-    public List<Movie> getResults() {
-        return results;
+    public List<Review> getReviews() {
+        return reviews;
     }
 
-    public void setResults(List<Movie> results) {
-        this.results = results;
+    public void setReviews(List<Review> reviews) {
+        this.reviews = reviews;
     }
 
     public int getTotalResults() {

@@ -9,7 +9,10 @@
     <dimen name="text_size_32">32dp</dimen>
     <dimen name="text_size_24">24dp</dimen>
     <dimen name="movie_detail_size">12sp</dimen>
+    <dimen name="movie_review_content_size">16sp</dimen>
     <dimen name="text_user_vote_size">12sp</dimen>
     <dimen name="text_vote_count_size">8sp</dimen>
     <dimen name="lv_trailer_list_height">160dp</dimen>
+    <dimen name="drawer_width">280dp</dimen>
+    <dimen name="drawer_header_height">160dp</dimen>
 </resources>

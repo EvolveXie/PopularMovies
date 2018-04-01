@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/rv_item_review_content"
+        android:textSize="@dimen/movie_detail_size"
+        android:ellipsize="end"
+        android:maxLines="3"
+        tools:text="This unique take on the heist-film-gone-wrong was excellent--stylish and intelligently made, yet very funny and inexpensive. "/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:textColor="@color/colorSecondary"
+        android:id="@+id/tv_open_review_content"
+        android:text="@string/open_review_content"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/rv_item_review_author"
+        android:layout_marginBottom="16dp"
+        android:layout_gravity="right"
+        android:textColor="@color/colorPrimary"
+        tools:text="Author Name"
+        />
+</LinearLayout>

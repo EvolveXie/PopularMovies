@@ -79,6 +79,7 @@
     <string name="sorting_by_popular">欢迎程度</string>
     <string name="sorting_by_rated">评分高低</string>
     <string name="vote_average">用户评分</string>
+    <string name="vote_count_unit">人</string>
     <string name="detail">详细信息</string>
     <string name="refresh_tip">请下拉刷新数据</string>
     <string name="overview_title">简介</string>
@@ -87,4 +88,14 @@
     <string name="label_genre">类型: </string>
     <string name="label_runtime">片长: </string>
     <string name="label_runtime_unit">分钟</string>
+    <string name="tv_review">影评</string>
+    <string name="open_review_content">展开</string>
+    <string name="close_review_content">收起</string>
+    <string name="favourite">收藏</string>
+    <string name="cancel_favourite">取消收藏</string>
+    <string name="header_text">TMDB</string>
+    <string name="menu_title_movies">Movies</string>
+    <string name="menu_title_favourite">Favourites</string>
+    <string name="drawer_open">Drawer Open</string>
+    <string name="drawer_close">Drawer Close</string>
 </resources>

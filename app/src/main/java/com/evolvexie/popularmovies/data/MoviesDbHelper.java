@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class MoviesDbHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
 
     public static final String DATABASE_NAME = "popular_movies.db";
 
@@ -36,6 +36,7 @@ public class MoviesDbHelper extends SQLiteOpenHelper {
                 + MoviesContract.MoviesEntry.COLUMN_RELEASE_DATE + " REAL, "
                 + MoviesContract.MoviesEntry.COLUMN_CREATE_TIME + " REAL, "
                 + MoviesContract.MoviesEntry.COLUMN_SORTING_WAR + " TEXT,"
+                + MoviesContract.MoviesEntry.COLUMN_IS_FAVOURITE + " TEXT,"
                 + " UNIQUE ("+ MoviesContract.MoviesEntry.COLUMN_MOVIE_ID+") ON CONFLICT REPLACE);";
 
         db.execSQL(CREATE_POPULAR_MIVIES_TABLE);

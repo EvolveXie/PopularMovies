@@ -42,5 +42,7 @@ public class MoviesContract {
         public static final String COLUMN_CREATE_TIME = "create_time";
         // 查询的时候根据这个值获取是按热度排序的电影还是按评分高低排序的电影；本地数据尽量和网络访问一致
         public static final String COLUMN_SORTING_WAR = "sorting_way";
+        // 是否收藏(Y/N)
+        public static final String COLUMN_IS_FAVOURITE = "is_favourite";
     }
 }

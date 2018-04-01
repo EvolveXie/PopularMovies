@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <group android:id="@+id/group1">
+        <item android:id="@+id/action_movies"
+            app:showAsAction="always"
+            android:icon="@mipmap/movies"
+            android:title="@string/menu_title_movies"/>
+        <item android:id="@+id/action_favourites"
+            app:showAsAction="always"
+            android:icon="@mipmap/favourite"
+            android:title="@string/menu_title_favourite"/>
+    </group>
+
+    <group android:id="@+id/group2">
+        <item android:id="@+id/action_drawer_setting"
+            app:showAsAction="always"
+            android:icon="@mipmap/setting"
+            android:title="@string/setting"/>
+    </group>
+</menu>

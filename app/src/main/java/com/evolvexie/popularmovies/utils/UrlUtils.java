@@ -27,4 +27,8 @@ public class UrlUtils {
      */
     public static final String GET_MOVIE_DETAIL = "https://api.themoviedb.org/3/movie/MOVIE_ID?api_key=API_KEY&language=zh-cn";
 
+    /**
+     * 影评
+     */
+    public static final String GET_REVIEW_LIST = "https://api.themoviedb.org/3/movie/MOVIE_ID/reviews?api_key=API_KEY&language=en-US&page=PAGE";
 }
