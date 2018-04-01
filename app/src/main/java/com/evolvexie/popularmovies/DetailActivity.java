@@ -6,17 +6,21 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.graphics.Palette;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -46,6 +50,7 @@ import com.evolvexie.popularmovies.utils.NetUtils;
 import com.evolvexie.popularmovies.utils.UrlUtils;
 import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 import com.squareup.picasso.Transformation;
 
 import java.util.ArrayList;
@@ -207,14 +212,14 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
             String backdropPath = UrlUtils.IMAGE_DETAIL_URL + movie.getBackdropPath();
             Picasso.with(this)
                     .load(backdropPath).transform(transformation)
-                    .placeholder(R.mipmap.loading)
+                    .placeholder(R.drawable.movie_temp_image)
                     .error(R.mipmap.ic_error)
                     .into(mBackdropImageView);
             mTitleTextView.setText(movie.getTitle());
             String posterPath = UrlUtils.IMAGE_DETAIL_URL + movie.getPosterPath();
             Picasso.with(this)
                     .load(posterPath).transform(transformation)
-                    .placeholder(R.mipmap.loading)
+                    .placeholder(R.drawable.movie_temp_image)
                     .error(R.mipmap.ic_error)
                     .into(mPosterImageView);
             mOverviewTextView.setText(movie.getOverview());
@@ -361,6 +366,9 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
         protected List<Review> doInBackground(String... params) {
             String url = params[0];
             String jsonStr = NetUtils.get(url);
+            if (jsonStr == null) {
+                return new ArrayList<>();
+            }
             Gson gson= new Gson();
             MovieReview movieReview = gson.fromJson(jsonStr,MovieReview.class);
             return movieReview.getReviews();

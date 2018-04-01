@@ -1,17 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="4dp">
-
+    android:background="@drawable/shadow">
+    
     <ImageView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/movie_list_item_image_height"
         android:id="@+id/list_item_movie_image"
         android:scaleType="centerCrop"
-        android:layout_gravity="center"/>
+        />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:padding="8dp"
+        android:textSize="@dimen/movie_list_title_size"
+        android:textColor="@android:color/black"
+        android:id="@+id/list_item_movie_title"
+        android:fontFamily="monospace"
+        tools:text="My Title!!!!!!!!!!!"
+        />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/list_item_movie_content"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:paddingBottom="8dp"
+        android:ellipsize="end"
+        android:maxLines="2"
+        tools:text="My Content!!!!!!!!!!!"/>
 
 
-
-</FrameLayout>
+</LinearLayout>

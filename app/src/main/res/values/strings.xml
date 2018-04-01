@@ -93,9 +93,10 @@
     <string name="close_review_content">收起</string>
     <string name="favourite">收藏</string>
     <string name="cancel_favourite">取消收藏</string>
-    <string name="header_text">TMDB</string>
     <string name="menu_title_movies">Movies</string>
     <string name="menu_title_favourite">Favourites</string>
     <string name="drawer_open">Drawer Open</string>
     <string name="drawer_close">Drawer Close</string>
+    <string name="main_activity_name_popular">Popular</string>
+    <string name="main_activity_name_rate">Top Rate</string>
 </resources>

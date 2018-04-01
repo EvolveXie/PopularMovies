@@ -80,18 +80,21 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
     public class MovieViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         ImageView mListItemImageView;
-        //TextView mListItemTextView;
+        TextView mListItemTitle;
+        TextView mListItemContent;
 
         public MovieViewHolder(View itemView) {
             super(itemView);
             mListItemImageView = (ImageView) itemView.findViewById(R.id.list_item_movie_image);
-            //mListItemTextView = (TextView) itemView.findViewById(R.id.tv_movie_title_display);
+            mListItemTitle = (TextView) itemView.findViewById(R.id.list_item_movie_title);
+            mListItemContent = (TextView) itemView.findViewById(R.id.list_item_movie_content);
             itemView.setOnClickListener(this);
         }
 
         void bind(int listIndex) {
-            String posterPath = UrlUtils.IMAGE_BASE_URL + movies.get(listIndex).getPosterPath();
-            // mListItemTextView.setText(movies.get(listIndex).getTitle());
+            String backDropPath = UrlUtils.IMAGE_BASE_URL + movies.get(listIndex).getBackdropPath();
+            mListItemTitle.setText(movies.get(listIndex).getTitle());
+            mListItemContent.setText(movies.get(listIndex).getOverview());
             Transformation transformation = new Transformation() {
                 @Override
                 public Bitmap transform(Bitmap source) {
@@ -99,8 +102,8 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
                         return source;
                     }
                     int imgWidth = source.getWidth();
-                    int imgHeight = source.getHeight()* (width/2)/imgWidth;
-                    Bitmap result = source.createScaledBitmap(source, width/2, imgHeight,false);
+                    int imgHeight = source.getHeight()* width/imgWidth;
+                    Bitmap result = source.createScaledBitmap(source, width, imgHeight,false);
                     if (source != result){
                         source.recycle();
                     }else {
@@ -114,11 +117,11 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
                     return "transformation";
                 }
             };
-            Picasso.with(context).load(posterPath)
+            Picasso.with(context).load(backDropPath)
                     .transform(transformation)
-                    .placeholder(R.mipmap.loading)
+                    .placeholder(R.drawable.movie_temp_image)
                     .error(R.mipmap.ic_error)
-                    .tag(movies.get(getAdapterPosition()).getPosterPath())
+                    .tag(movies.get(getAdapterPosition()).getBackdropPath())
                     .into(mListItemImageView);
         }
 

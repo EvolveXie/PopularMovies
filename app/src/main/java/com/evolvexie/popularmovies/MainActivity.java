@@ -19,6 +19,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -128,7 +129,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     NavigationView mNavigationView;
 
     private ActionBarDrawerToggle drawerToggle;
-    private final GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 2);
+    //private final GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 2);
+    private final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
     private boolean isLoadingMore = false; // 标志现在是否正在进行上划加载更多(防止多次上划手势而启动了多个后台线程)
     private int currentPage = 0;
     private String curUrl = null;   // a flag that show if sorting wat had been changed in setting
@@ -148,6 +150,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         setSupportActionBar(mToolbar);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(true);
+
+        // 设置抽屉导航栏
         drawerToggle = new ActionBarDrawerToggle(this,
                 mDrawerLayout,mToolbar,R.string.drawer_open,R.string.drawer_close);
         mDrawerLayout.setDrawerListener(drawerToggle);
@@ -157,15 +161,15 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         mSwipeRefreshLayout.setColorSchemeResources(R.color.colorAccent, R.color.colorPrimary);
         mSwipeRefreshLayout.setOnRefreshListener(this);
 
-        mMovieListRecyclerView.setLayoutManager(gridLayoutManager);
+        mMovieListRecyclerView.setLayoutManager(linearLayoutManager);
         mMovieListRecyclerView.setHasFixedSize(true);
 
         mMovieListRecyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                int lastVisiableItem = gridLayoutManager.findLastVisibleItemPosition();
-                int totalItemCount = gridLayoutManager.getItemCount();
+                int lastVisiableItem = linearLayoutManager.findLastVisibleItemPosition();
+                int totalItemCount = linearLayoutManager.getItemCount();
                 if (lastVisiableItem >= totalItemCount - 4 && dy > 0) {
                     if (!isLoadingMore) {
                         isLoadingMore = true;
@@ -192,26 +196,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         curShowing = SHOWING_MOVIES;
         showMoviesDataView();
 
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int itemId = item.getItemId();
-        switch (itemId) {
-            case R.id.action_setting:
-                Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
-                startActivity(intent);
-                break;
-            default:
-                break;
-        }
-        return true;
     }
 
     public void showErrorMessage() {
@@ -262,6 +246,11 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         //String url = getMoviesUrl();
         SharedPreferences sharedPreferences = getSharedPreferences(CommonPreferences.SETTING_PREF_NAME, MODE_PRIVATE);
         String curSortingSetting = sharedPreferences.getString(CommonPreferences.SORTING_WAY, "popular");
+        if ("popular".equals(curSortingSetting) || curSortingSetting == null){
+            getSupportActionBar().setTitle(R.string.main_activity_name_popular);
+        }else {
+            getSupportActionBar().setTitle(R.string.main_activity_name_rate);
+        }
         if ((curSortingWay != null && !curSortingWay.equals(curSortingSetting))  // sorting way had been changed
                 || (curMovies == null || curMovies.size() == 0)) {  // current movie list is null or empty
             // 置为空，这样在onStartLoading方法内才会加载新数据

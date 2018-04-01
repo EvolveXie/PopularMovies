@@ -36,7 +36,7 @@ public class NetUtils {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            Log.e(TAG, "get ERROR: "+response.code(),e);
+            Log.e(TAG, "get method ERROR: ",e);
             return null;
         }
         return null;

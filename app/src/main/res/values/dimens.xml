@@ -15,4 +15,6 @@
     <dimen name="lv_trailer_list_height">160dp</dimen>
     <dimen name="drawer_width">280dp</dimen>
     <dimen name="drawer_header_height">160dp</dimen>
+    <dimen name="movie_list_title_size">18sp</dimen>
+    <dimen name="movie_list_item_image_height">200dp</dimen>
 </resources>
