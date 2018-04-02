@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.graphics.Palette;
@@ -166,8 +167,12 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
             case R.id.action_collect:
                 if (item.getTitle().equals(getResources().getString(R.string.favourite))){
                     curMovie.setIsFavourite("Y");
+                    item.setIcon(R.mipmap.favourite_orange);
+                    item.setTitle(getResources().getString(R.string.cancel_favourite));
                 }else {
                     curMovie.setIsFavourite("N");
+                    item.setIcon(R.mipmap.favourite_white);
+                    item.setTitle(getResources().getString(R.string.favourite));
                 }
                 new UpdateMovieTask().execute(curMovie);
                 break;
@@ -406,14 +411,7 @@ public class DetailActivity extends AppCompatActivity implements View.OnClickLis
         @Override
         protected void onPostExecute(Integer count) {
             if (count > 0) {
-                MenuItem favourite = menu.findItem(R.id.action_collect);
-                if ("Y".equals(mMovie.getIsFavourite())){
-                    favourite.setIcon(R.mipmap.favourite_orange);
-                    favourite.setTitle(getResources().getString(R.string.cancel_favourite));
-                }else {
-                    favourite.setIcon(R.mipmap.favourite_white);
-                    favourite.setTitle(getResources().getString(R.string.favourite));
-                }
+                Snackbar.make(mScrollView, getResources().getString(R.string.favourite_add_tip), Snackbar.LENGTH_SHORT).show();
             }
         }
     }

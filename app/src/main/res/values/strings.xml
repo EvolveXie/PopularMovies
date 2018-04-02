@@ -93,6 +93,7 @@
     <string name="close_review_content">收起</string>
     <string name="favourite">收藏</string>
     <string name="cancel_favourite">取消收藏</string>
+    <string name="favourite_add_tip">已加入收藏</string>
     <string name="menu_title_movies">Movies</string>
     <string name="menu_title_favourite">Favourites</string>
     <string name="drawer_open">Drawer Open</string>

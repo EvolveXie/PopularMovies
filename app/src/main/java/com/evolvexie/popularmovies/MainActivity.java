@@ -141,6 +141,9 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     private static final int SHOWING_MOVIES = 0;
     private static final int SHOWING_FAVOURITE = 1;
 
+    // 用于标明是不是所有数据库数据都已经被查询出来了，避免不必要的查询
+    private static boolean isAllBeenQuery = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -171,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 int lastVisiableItem = linearLayoutManager.findLastVisibleItemPosition();
                 int totalItemCount = linearLayoutManager.getItemCount();
                 if (lastVisiableItem >= totalItemCount - 4 && dy > 0) {
-                    if (!isLoadingMore) {
+                    if (!isLoadingMore && !isAllBeenQuery) {
                         isLoadingMore = true;
                         SharedPreferences sharedPreferences = getSharedPreferences(CommonPreferences.SETTING_PREF_NAME, MODE_PRIVATE);
                         boolean isFirstTime = sharedPreferences.getBoolean(CommonPreferences.IS_FIRST_LOADING, true);
@@ -390,6 +393,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     }
 
     public List<Movie> getMoviesFromInternet(Bundle args){
+        isAllBeenQuery = false;
         OkHttpClient okHttpClient = new OkHttpClient();
         Gson gson = new Gson();
         String url = args.getString(MOVIES_URL_KEY);
@@ -448,6 +452,9 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 selection,
                 selectionArgs,
                 sortOrder);
+        if (cursor.getCount() == 0) {
+            isAllBeenQuery = true;
+        }
         List<Movie> results = new ArrayList<>();
         while (cursor.moveToNext()){
             Movie movie = new Movie();
@@ -507,6 +514,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         mDrawerLayout.closeDrawer(Gravity.START);
         switch (item.getItemId()){
             case R.id.action_movies: //侧边栏选择电影列表
+                isAllBeenQuery = false;
                 if (curShowing != SHOWING_MOVIES){
                     currentPage = 0;
                     curShowing = SHOWING_MOVIES;
@@ -515,6 +523,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 }
                 break;
             case R.id.action_favourites: //选择收藏列表
+                isAllBeenQuery = false;
                 if (curShowing != SHOWING_FAVOURITE){
                     currentPage = 0;
                     curShowing = SHOWING_FAVOURITE;
