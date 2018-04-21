@@ -11,25 +11,26 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.evolvexie.popularmovies.BuildConfig;
 import com.evolvexie.popularmovies.R;
 import com.evolvexie.popularmovies.model.Movie;
 import com.evolvexie.popularmovies.utils.UrlUtils;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by orlog on 2017/4/11.
  */
 
-public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerViewAdapter.MovieViewHolder> {
+public class MainRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static final String TAG = MainRecyclerViewAdapter.class.getSimpleName();
     private List<Movie> movies;
     private Context context;
     private int width = 0; // screen width
+    private int load_more_status = BuildConfig.MAIN_PULLUP_LOAD_MORE;
 
     private MainRvAdapterClickHandler mClickHandler;
     public interface MainRvAdapterClickHandler {
@@ -46,27 +47,43 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
     }
 
     @Override
-    public MovieViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         context = parent.getContext();
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
         width = displayMetrics.widthPixels;
-
-        int layoutIdForListItem = R.layout.layout_movie_list_item;
-        LayoutInflater layoutInflater = LayoutInflater.from(context);
         boolean shouldAttachToParentImmediately = false;
-        View view = layoutInflater.inflate(layoutIdForListItem, parent, shouldAttachToParentImmediately);
-        MovieViewHolder movieViewHolder = new MovieViewHolder(view);
-        return movieViewHolder;
+        LayoutInflater layoutInflater = LayoutInflater.from(context);
+        if (viewType == BuildConfig.MAIN_ITEM_TYPE) {
+            int layoutIdForListItem = R.layout.layout_movie_list_item;
+            View view = layoutInflater.inflate(layoutIdForListItem, parent, shouldAttachToParentImmediately);
+            MovieViewHolder movieViewHolder = new MovieViewHolder(view);
+            return movieViewHolder;
+        } else if (viewType == BuildConfig.MAIN_FOOTER_TYPE) {
+            int layoutIdForFooter = R.layout.layout_movie_list_footer;
+            View view = layoutInflater.inflate(layoutIdForFooter,parent,shouldAttachToParentImmediately);
+            FooterViewHolder footerViewHolder = new FooterViewHolder(view);
+            return footerViewHolder;
+        }
+        return null;
     }
 
     @Override
-    public void onBindViewHolder(MovieViewHolder holder, int position) {
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         Log.d(TAG, "onBindViewHolder: " + position);
-        //holder.setIsRecyclable(false);
-        // 设置tag，在holder被回收时要取消后台图片加载
-        holder.mListItemImageView.setTag(movies.get(holder.getAdapterPosition()).getPosterPath());
-        holder.bind(holder.getAdapterPosition());
-
+        if (holder instanceof MovieViewHolder){
+            MovieViewHolder movieViewHolder = (MovieViewHolder) holder;
+            //holder.setIsRecyclable(false);
+            // 设置tag，在holder被回收时要取消后台图片加载
+            movieViewHolder.mListItemImageView.setTag(movies.get(holder.getAdapterPosition()).getPosterPath());
+            movieViewHolder.bind(holder.getAdapterPosition());
+        } else if (holder instanceof FooterViewHolder) {
+            FooterViewHolder footerViewHolder = (FooterViewHolder) holder;
+            if (load_more_status == BuildConfig.MAIN_PULLUP_LOAD_MORE) {
+                footerViewHolder.mFooterTitle.setText(context.getResources().getString(R.string.loading_more_tip));
+            } else if (load_more_status == BuildConfig.MAIN_LOADING_MORE) {
+                footerViewHolder.mFooterTitle.setText(context.getResources().getString(R.string.loading_more));
+            }
+        }
     }
 
     @Override
@@ -74,7 +91,15 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
         if (movies == null) {
             return 0;
         }
-        return movies.size();
+        return movies.size()+1;
+    }
+
+    public class FooterViewHolder extends RecyclerView.ViewHolder {
+        TextView mFooterTitle;
+        public FooterViewHolder(View itemView) {
+            super(itemView);
+            mFooterTitle = itemView.findViewById(R.id.tv_footer_title);
+        }
     }
 
     public class MovieViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -85,9 +110,9 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
 
         public MovieViewHolder(View itemView) {
             super(itemView);
-            mListItemImageView = (ImageView) itemView.findViewById(R.id.list_item_movie_image);
-            mListItemTitle = (TextView) itemView.findViewById(R.id.list_item_movie_title);
-            mListItemContent = (TextView) itemView.findViewById(R.id.list_item_movie_content);
+            mListItemImageView = itemView.findViewById(R.id.list_item_movie_image);
+            mListItemTitle = itemView.findViewById(R.id.list_item_movie_title);
+            mListItemContent = itemView.findViewById(R.id.list_item_movie_content);
             itemView.setOnClickListener(this);
         }
 
@@ -127,14 +152,28 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
 
         @Override
         public void onClick(View v) {
-            mClickHandler.onClick(movies.get(getAdapterPosition()));
+            if (mClickHandler != null) {
+                mClickHandler.onClick(movies.get(getAdapterPosition()));
+            }
         }
     }
 
     @Override
-    public void onViewRecycled(MovieViewHolder holder) {
+    public void onViewRecycled(RecyclerView.ViewHolder holder) {
         super.onViewRecycled(holder);
-        Picasso.with(context).cancelTag(holder.mListItemImageView.getTag());
+        if (holder instanceof MovieViewHolder) {
+            MovieViewHolder movieViewHolder = (MovieViewHolder) holder;
+            Picasso.with(context).cancelTag(movieViewHolder.mListItemImageView.getTag());
+        }
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (position == getItemCount()-1) {
+            return BuildConfig.MAIN_FOOTER_TYPE;
+        }else {
+            return BuildConfig.MAIN_ITEM_TYPE;
+        }
     }
 
     public void setMovies(List<Movie> movies) {
@@ -152,5 +191,10 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
         }
         Log.d(TAG, "addMovies: #####################"+movies.size());
         Log.d(TAG, "addMovies: #####################"+this.movies.size());
+    }
+
+    public void changeLoadMoreStatus(int status){
+        load_more_status = status;
+        notifyDataSetChanged();
     }
 }

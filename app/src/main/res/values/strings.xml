@@ -100,4 +100,6 @@
     <string name="drawer_close">Drawer Close</string>
     <string name="main_activity_name_popular">Popular</string>
     <string name="main_activity_name_rate">Top Rate</string>
+    <string name="loading_more_tip">上拉加载更多</string>
+    <string name="loading_more">正在加载...</string>
 </resources>

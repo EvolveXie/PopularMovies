@@ -176,6 +176,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 if (lastVisiableItem >= totalItemCount - 4 && dy > 0) {
                     if (!isLoadingMore && !isAllBeenQuery) {
                         isLoadingMore = true;
+                        mMainRecycleViewAdapter.changeLoadMoreStatus(BuildConfig.MAIN_LOADING_MORE);
                         SharedPreferences sharedPreferences = getSharedPreferences(CommonPreferences.SETTING_PREF_NAME, MODE_PRIVATE);
                         boolean isFirstTime = sharedPreferences.getBoolean(CommonPreferences.IS_FIRST_LOADING, true);
                         if (isFirstTime) {
@@ -225,6 +226,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             fetchMovieDatas(MOVIES_CURSOR_LOADER,false);
         }else {
             isLoadingMore = false;
+            mMainRecycleViewAdapter.changeLoadMoreStatus(BuildConfig.MAIN_PULLUP_LOAD_MORE);
             fetchMovieDatas(MOVIES_INTERNET_LOADER,false);
         }
         Log.d(TAG, "onRefresh: currentPage<--" + currentPage);
@@ -259,6 +261,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             // 置为空，这样在onStartLoading方法内才会加载新数据
             curMovies.clear();
             isLoadingMore = false;
+            mMainRecycleViewAdapter.changeLoadMoreStatus(BuildConfig.MAIN_PULLUP_LOAD_MORE);
             currentPage = 0;
             curSortingWay = null; // when curSortingWay is null,it would change to new sortingWar in getMoviesUrl() method
             mMainRecycleViewAdapter = new MainRecyclerViewAdapter(this);
@@ -308,7 +311,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                  */
                 if (curMovies == null || curMovies.size() == 0 || mSwipeRefreshLayout.isRefreshing() || isLoadingMore) {
                     if (!mSwipeRefreshLayout.isRefreshing()) {
-                        mLoadingIndicator.setVisibility(View.VISIBLE);
+                        //mLoadingIndicator.setVisibility(View.VISIBLE);
+                        mMainRecycleViewAdapter.changeLoadMoreStatus(BuildConfig.MAIN_LOADING_MORE);
                     }
                     forceLoad();
                 }
@@ -385,6 +389,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             mRefreshTipDisplay.setVisibility(View.INVISIBLE);
         }
         isLoadingMore = false;
+        mMainRecycleViewAdapter.changeLoadMoreStatus(BuildConfig.MAIN_PULLUP_LOAD_MORE);
     }
 
     @Override
