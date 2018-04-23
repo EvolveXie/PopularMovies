@@ -11,10 +11,10 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
-        buildConfigField("int","MAIN_ITEM_TYPE","0")
-        buildConfigField("int","MAIN_FOOTER_TYPE","1")
-        buildConfigField("int","MAIN_LOADING_MORE","1")
-        buildConfigField("int","MAIN_PULLUP_LOAD_MORE","0")
+        buildConfigField("int", "MAIN_ITEM_TYPE", "0")
+        buildConfigField("int", "MAIN_FOOTER_TYPE", "1")
+        buildConfigField("int", "MAIN_LOADING_MORE", "1")
+        buildConfigField("int", "MAIN_PULLUP_LOAD_MORE", "0")
     }
     buildTypes {
         release {

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">热门电影</string>
+    <string name="app_name">司南电影</string>
     <string name="setting">设 置</string>
     <string name="error_message">An error has occurred. Please try again by clicking REFRESH</string>
     <string name="title_activity_settings">Settings</string>
@@ -102,4 +102,7 @@
     <string name="main_activity_name_rate">Top Rate</string>
     <string name="loading_more_tip">上拉加载更多</string>
     <string name="loading_more">正在加载...</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
