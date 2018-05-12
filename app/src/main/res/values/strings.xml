@@ -32,23 +32,6 @@
     <!-- Example settings for Data & Sync -->
     <string name="pref_header_data_sync">Data &amp; sync</string>
 
-    <string name="pref_title_sync_frequency">Sync frequency</string>
-    <string-array name="pref_sync_frequency_titles">
-        <item>15 minutes</item>
-        <item>30 minutes</item>
-        <item>1 hour</item>
-        <item>3 hours</item>
-        <item>6 hours</item>
-        <item>Never</item>
-    </string-array>
-    <string-array name="pref_sync_frequency_values">
-        <item>15</item>
-        <item>30</item>
-        <item>60</item>
-        <item>180</item>
-        <item>360</item>
-        <item>-1</item>
-    </string-array>
 
     <string-array name="list_preference_entries">
         <item>Entry 1</item>
@@ -64,7 +47,7 @@
 
     <string-array name="multi_select_list_preference_default_value" />
 
-    <string name="pref_title_system_sync_settings">System sync settings</string>
+    <string name="pref_title_system_sync_settings">系统同步设置</string>
 
     <!-- Example settings for Notifications -->
     <string name="pref_header_notifications">Notifications</string>
@@ -103,6 +86,57 @@
     <string name="loading_more_tip">上拉加载更多</string>
     <string name="loading_more">正在加载...</string>
 
+    <!-- Sync Adapter -->
+    <string name="account_type" translatable="false">evolvexie.com</string>
+    <string name="account_name" translatable="false">dummyaccount</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="sync_frequency">同步频率</string>
+    <string name="general_title">常用</string>
+    <string name="other_title">其它</string>
+    <string name="title_activity_preference_settings">Settings</string>
+
+    <string name="sorting_way_popular" translatable="false">popular</string>
+    <string name="sorting_way_rated" translatable="false">rated</string>
+    <string name="pref_key_sorting_way" translatable="false">sorting_way_setting</string>
+    <string-array name="pref_sorting_way_titles">
+        <item>@string/sorting_by_popular</item>
+        <item>@string/sorting_by_rated</item>
+    </string-array>
+    <string-array name="pref_sorting_way_values">
+        <item>@string/sorting_way_popular</item>
+        <item>@string/sorting_way_rated</item>
+    </string-array>
+    
+    <string name="pref_key_sync_frequency" translatable="false">sync_frequency_setting</string>
+    <string name="pref_default_sync_frequency" translatable="false">24</string>
+    <string-array name="pref_sync_frequency_titles">
+        <item>1 小时</item>
+        <item>3 小时</item>
+        <item>6 小时</item>
+        <item>9 小时</item>
+        <item>12 小时</item>
+        <item>24 小时</item>
+        <item>48 小时</item>
+    </string-array>
+    <string-array name="pref_sync_frequency_values">
+        <item>1</item>
+        <item>3</item>
+        <item>6</item>
+        <item>9</item>
+        <item>12</item>
+        <item>24</item>
+        <item>48</item>
+    </string-array>
+
+    <!-- 电影列表第一名改变发送通知 -->
+    <string name="notification_title_first_change">电影榜</string>
+    <string name="notification_content_popular">热度</string>
+    <string name="notification_content_rated">评分</string>
+    <string name="notification_content_first_change">电影%1$s榜第一名已变更为：%2$s</string>
+    <string name="pref_title_notification">通知</string>
+    <string name="pref_key_notification" translatable="false">notification_setting</string>
+    <string name="pref_text_notification_on">开启</string>
+    <string name="pref_text_notification_off">关闭</string>
 </resources>

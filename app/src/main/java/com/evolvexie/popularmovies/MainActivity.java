@@ -1,5 +1,9 @@
 package com.evolvexie.popularmovies;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.content.ContentResolver;
+import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.widget.DrawerLayout;
@@ -7,8 +11,10 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 
+import com.evolvexie.popularmovies.adapter.MovieSyncAdapter;
 import com.evolvexie.popularmovies.fragment.MainFragment;
 
 import butterknife.BindView;
@@ -17,6 +23,7 @@ import butterknife.ButterKnife;
 public class MainActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener{
 
+    private static final String TAG = MainActivity.class.getSimpleName();
     @BindView(R.id.main_toolbar)
     Toolbar mToolbar;
     @BindView(R.id.main_drawer)
@@ -42,6 +49,12 @@ public class MainActivity extends AppCompatActivity implements
         mDrawerLayout.setDrawerListener(drawerToggle);
 
         mNavigationView.setNavigationItemSelectedListener(this);
+        Account account = MovieSyncAdapter.getAccount(this);
+        if (account != null) { // 打开时进行一次数据同步(校验是否正在同步)
+            if (!ContentResolver.isSyncActive(account,MovieSyncAdapter.AUTHORITY)){
+                MovieSyncAdapter.performSync(this,account);
+            }
+        }
     }
 
     @Override
@@ -55,4 +68,5 @@ public class MainActivity extends AppCompatActivity implements
         MainFragment mainFragment = (MainFragment) getSupportFragmentManager().findFragmentById(R.id.main_fragment);
         return mainFragment.navigationItemSelect(item,mDrawerLayout);
     }
+
 }

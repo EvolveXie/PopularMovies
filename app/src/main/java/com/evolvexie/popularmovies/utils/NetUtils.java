@@ -31,7 +31,7 @@ public class NetUtils {
             response = okHttpClient.newCall(request).execute();
             if (response.message().equals("OK")) {
                 String jsonStr = response.body().string();
-                Log.d(TAG, "get Json: "+jsonStr);
+                Log.d(TAG, "get Json: successful");
                 return jsonStr;
             }
         } catch (IOException e) {

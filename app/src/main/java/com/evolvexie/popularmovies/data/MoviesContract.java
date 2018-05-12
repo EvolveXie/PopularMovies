@@ -13,7 +13,7 @@ public class MoviesContract {
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
     public static final String MOVIES_PATH = "movies";
     public static final String MOVIES_PAGE_PATH = "moviePage";
-    public static final int PAGE_SIZE = 16;
+    public static final int PAGE_SIZE = 20;
 
     public MoviesContract(){
 

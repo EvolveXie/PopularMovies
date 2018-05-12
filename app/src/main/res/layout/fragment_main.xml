@@ -3,21 +3,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragment.MainFragment">
+    tools:context=".fragment.MainFragment"
+    android:background="@drawable/shadow_right">
 
-    <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/srl_refresh"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_display_movies"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/rv_display_movies"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-        </android.support.v7.widget.RecyclerView>
-    </android.support.v4.widget.SwipeRefreshLayout>
-
+    </android.support.v7.widget.RecyclerView>
 
     <TextView
         android:id="@+id/tv_error_message_display"
@@ -35,14 +29,5 @@
         android:layout_gravity="center"
         />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/tv_show_refresh_tip"
-        android:text="@string/refresh_tip"
-        android:textAlignment="center"
-        android:layout_gravity="center"
-        android:textSize="@dimen/text_size_24"
-        android:visibility="invisible"/>
 
 </FrameLayout>

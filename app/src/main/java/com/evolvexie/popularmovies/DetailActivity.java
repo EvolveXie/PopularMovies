@@ -13,6 +13,8 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.graphics.Palette;
@@ -41,6 +43,7 @@ import com.evolvexie.popularmovies.adapter.ReviewRecyclerViewAdapter;
 import com.evolvexie.popularmovies.data.KeyPreferences;
 import com.evolvexie.popularmovies.data.MoviesContract;
 import com.evolvexie.popularmovies.data.MoviesDbHelper;
+import com.evolvexie.popularmovies.fragment.DetailFragment;
 import com.evolvexie.popularmovies.model.Movie;
 import com.evolvexie.popularmovies.model.MovieDetail;
 import com.evolvexie.popularmovies.model.MovieReview;
@@ -77,12 +80,22 @@ public class DetailActivity extends AppCompatActivity {
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        Intent fromIntent = this.getIntent();
+        if (fromIntent.hasExtra("movie")) {
+            Movie movie = fromIntent.getParcelableExtra("movie");
+            DetailFragment detailFragment = DetailFragment.newInstance(movie);
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.add(R.id.detail_fragment_container,detailFragment,BuildConfig.DETAIL_FRAGMENT_TAG);
+            fragmentTransaction.commit();
+        }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.detail,menu);
-        return true;
+        //getMenuInflater().inflate(R.menu.detail,menu);
+        return false;
     }
 
     @Override

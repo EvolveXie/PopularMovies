@@ -10,6 +10,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.preference.PreferenceManager;
 import android.text.TextUtils;
 
 /**
@@ -58,9 +59,10 @@ public class MoviesProvider extends ContentProvider {
                                 null,
                                 null,
                                 null);
-                        if (cursor.moveToNext()){
+                        if (cursor != null && cursor.moveToNext()){
                             // 上面只查询了是否收藏一个字段，所以这里index为0
                             value.put(MoviesContract.MoviesEntry.COLUMN_IS_FAVOURITE,cursor.getString(0));
+                            cursor.close();
                         }
                         long rowId = db.insert(MoviesContract.MoviesEntry.TABLE_NAME,
                                 null,
@@ -144,7 +146,7 @@ public class MoviesProvider extends ContentProvider {
 
     @Override
     public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
-        SharedPreferences sharedPreferences = mContext.getSharedPreferences(CommonPreferences.SETTING_PREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         String sortingWay = sharedPreferences.getString(CommonPreferences.SORTING_WAY, "popular");
         switch (sUriMatcher.match(uri)) {
             case MOVIES:

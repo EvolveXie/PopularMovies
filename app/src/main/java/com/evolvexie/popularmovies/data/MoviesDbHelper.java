@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class MoviesDbHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
 
     public static final String DATABASE_NAME = "popular_movies.db";
 
@@ -20,26 +20,26 @@ public class MoviesDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        final String CREATE_POPULAR_MIVIES_TABLE =
+        final String CREATE_POPULAR_MOVIES_TABLE =
                 "CREATE TABLE " + MoviesContract.MoviesEntry.TABLE_NAME + " ("
                 + MoviesContract.MoviesEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + MoviesContract.MoviesEntry.COLUMN_MOVIE_ID + " INTEGER NOT NULL, "
                 + MoviesContract.MoviesEntry.COLUMN_TITLE + " TEXT NOT NULL, "
-                + MoviesContract.MoviesEntry.COLUMN_OVERVIEW + " TEXT NOT NULL, "
-                + MoviesContract.MoviesEntry.COLUMN_POSTER_PATH + " TEXT NOT NULL, "
-                + MoviesContract.MoviesEntry.COLUMN_VOTE_AVERAGE + " TEXT NOT NULL, "
+                + MoviesContract.MoviesEntry.COLUMN_OVERVIEW + " TEXT, "
+                + MoviesContract.MoviesEntry.COLUMN_POSTER_PATH + " TEXT, "
+                + MoviesContract.MoviesEntry.COLUMN_VOTE_AVERAGE + " TEXT, "
                 + MoviesContract.MoviesEntry.COLUMN_VOTE_COUNT + " TEXT, "
                 + MoviesContract.MoviesEntry.COLUMN_ADULT + " TEXT, "
-                + MoviesContract.MoviesEntry.COLUMN_BACKDROP_PATH + " TEXT NOT NULL, "
+                + MoviesContract.MoviesEntry.COLUMN_BACKDROP_PATH + " TEXT, "
                 + MoviesContract.MoviesEntry.COLUMN_ORIGINAL_TITLE + " TEXT, "
                 + MoviesContract.MoviesEntry.COLUMN_POPULARITY + " REAL, "
                 + MoviesContract.MoviesEntry.COLUMN_RELEASE_DATE + " REAL, "
                 + MoviesContract.MoviesEntry.COLUMN_CREATE_TIME + " REAL, "
                 + MoviesContract.MoviesEntry.COLUMN_SORTING_WAR + " TEXT,"
                 + MoviesContract.MoviesEntry.COLUMN_IS_FAVOURITE + " TEXT,"
-                + " UNIQUE ("+ MoviesContract.MoviesEntry.COLUMN_MOVIE_ID+") ON CONFLICT REPLACE);";
+                + " UNIQUE ("+ MoviesContract.MoviesEntry.COLUMN_MOVIE_ID+","+MoviesContract.MoviesEntry.COLUMN_SORTING_WAR+") ON CONFLICT REPLACE);";
 
-        db.execSQL(CREATE_POPULAR_MIVIES_TABLE);
+        db.execSQL(CREATE_POPULAR_MOVIES_TABLE);
     }
 
     @Override

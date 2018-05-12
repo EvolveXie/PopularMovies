@@ -4,18 +4,21 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -107,10 +110,11 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     TextView mErrorMessageDisplay;
 
     private MainRecyclerViewAdapter mMainRecycleViewAdapter;
-    @BindView(R.id.srl_refresh)
-    SwipeRefreshLayout mSwipeRefreshLayout;
-    @BindView(R.id.tv_show_refresh_tip)
-    TextView mRefreshTipDisplay;
+    // 使用了Sync Adapter后不再需要刷新操作
+//    @BindView(R.id.srl_refresh)
+//    SwipeRefreshLayout mSwipeRefreshLayout;
+//    @BindView(R.id.tv_show_refresh_tip)
+//    TextView mRefreshTipDisplay;
 
     private final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
     private boolean isLoadingMore = false; // 标志现在是否正在进行上划加载更多(防止多次上划手势而启动了多个后台线程)
@@ -128,6 +132,12 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 
     private MainActivity mActivity;
     private Unbinder unbinder;
+    // 当前选中的recycleView的位置
+    private int selectedPosition = 0;
+    // 当前可见的第一个item的位置
+    private int firstVisiableItemPosition = 0;
+    // 是否需要跳转到销毁前的滚动位置（跳转过后需要置为false）
+    private boolean isNeedScroll = false;
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -188,10 +198,11 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
         mActivity = (MainActivity) getActivity();
 
-        mSwipeRefreshLayout.setColorSchemeResources(R.color.colorAccent, R.color.colorPrimary);
-        mSwipeRefreshLayout.setOnRefreshListener(this);
+//        mSwipeRefreshLayout.setColorSchemeResources(R.color.colorAccent, R.color.colorPrimary);
+//        mSwipeRefreshLayout.setOnRefreshListener(this);
 
         mMovieListRecyclerView.setLayoutManager(linearLayoutManager);
         mMovieListRecyclerView.setHasFixedSize(true);
@@ -206,7 +217,7 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                     if (!isLoadingMore && !isAllBeenQuery) {
                         isLoadingMore = true;
                         mMainRecycleViewAdapter.changeLoadMoreStatus(BuildConfig.MAIN_LOADING_MORE);
-                        SharedPreferences sharedPreferences = mActivity.getSharedPreferences(CommonPreferences.SETTING_PREF_NAME, mActivity.MODE_PRIVATE);
+                        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
                         boolean isFirstTime = sharedPreferences.getBoolean(CommonPreferences.IS_FIRST_LOADING, true);
                         if (isFirstTime) {
                             fetchMovieDatas(MOVIES_INTERNET_LOADER, isLoadingMore);
@@ -226,6 +237,11 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         mMainRecycleViewAdapter = new MainRecyclerViewAdapter(this);
         mMovieListRecyclerView.setAdapter(mMainRecycleViewAdapter);
 
+        if (savedInstanceState !=null && savedInstanceState.containsKey(BuildConfig.MAIN_LIST_POSITION)) {
+            firstVisiableItemPosition = savedInstanceState.getInt(BuildConfig.MAIN_LIST_POSITION);
+            isNeedScroll = true;
+        }
+
         curShowing = SHOWING_MOVIES;
         showMoviesDataView();
     }
@@ -233,7 +249,7 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     @Override
     public void onStart() {
         super.onStart();
-        SharedPreferences sharedPreferences = mActivity.getSharedPreferences(CommonPreferences.SETTING_PREF_NAME, mActivity.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
         String curSortingSetting = sharedPreferences.getString(CommonPreferences.SORTING_WAY, "popular");
         if ("popular".equals(curSortingSetting) || curSortingSetting == null){
             mActivity.getSupportActionBar().setTitle(R.string.main_activity_name_popular);
@@ -263,6 +279,12 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putInt(BuildConfig.MAIN_LIST_POSITION,linearLayoutManager.findFirstVisibleItemPosition());
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
     }
@@ -279,11 +301,39 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
      * @param movie
      */
     @Override
-    public void onClick(Movie movie) {
-        Intent intent = new Intent(mActivity, DetailActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        intent.putExtra("movie", movie);
-        startActivity(intent);
+    public void onClick(Movie movie,int position) {
+        Configuration configuration = mActivity.getResources().getConfiguration();
+        int smallestScreenWidthDp = configuration.smallestScreenWidthDp;
+        int orientation = configuration.orientation;
+        if (smallestScreenWidthDp < 600 && orientation != Configuration.ORIENTATION_LANDSCAPE) {
+            Intent intent = new Intent(mActivity, DetailActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            intent.putExtra("movie", movie);
+            startActivity(intent);
+        }else {
+            if (selectedPosition != position) { //更改选中状态的背景
+                // 上一次被选中的item位置的view
+                View selectedView = linearLayoutManager.findViewByPosition(selectedPosition);
+                if (selectedView != null) { // 如果视图已经被recycleView回收了，则为null
+                    selectedView.setBackgroundColor(getResources().getColor(R.color.unSelect_white));
+                }
+                selectedPosition = position;
+                linearLayoutManager.findViewByPosition(position).setBackgroundColor(getResources().getColor(R.color.select_grey));
+
+                FragmentManager fragmentManager = mActivity.getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                Fragment curFragment = fragmentManager.findFragmentByTag(BuildConfig.DETAIL_FRAGMENT_TAG);
+                if (curFragment == null) {
+                    DetailFragment detailFragment = DetailFragment.newInstance(movie);
+                    fragmentTransaction.add(R.id.detail_fragment_container,detailFragment,BuildConfig.DETAIL_FRAGMENT_TAG);
+                    fragmentTransaction.commitAllowingStateLoss();
+                }else {
+                    DetailFragment detailFragment = DetailFragment.newInstance(movie);
+                    fragmentTransaction.replace(R.id.detail_fragment_container,detailFragment,BuildConfig.DETAIL_FRAGMENT_TAG);
+                    fragmentTransaction.commitAllowingStateLoss();
+                }
+            }
+        }
     }
 
     public void showErrorMessage() {
@@ -344,14 +394,14 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                 /**
                  * 进入其它activity时，点击back按钮，会导致MainActivity调用onStart方法，
                  * 而源码中这个方法会调用Loader的onStartLoading方法，造成不必要的数据loading。所以这里需要加一个判断
-                 * mSwipeRefreshLayout.isRefreshing()表示正在进行下拉刷型，需要调用后台loading
+                 * // mSwipeRefreshLayout.isRefreshing()表示正在进行下拉刷型，需要调用后台loading
                  * isLoadingMore表示正在上划加载更多
                  */
-                if (curMovies == null || curMovies.size() == 0 || mSwipeRefreshLayout.isRefreshing() || isLoadingMore) {
-                    if (!mSwipeRefreshLayout.isRefreshing()) {
-                        //mLoadingIndicator.setVisibility(View.VISIBLE);
-                        mMainRecycleViewAdapter.changeLoadMoreStatus(BuildConfig.MAIN_LOADING_MORE);
-                    }
+                if (curMovies == null || curMovies.size() == 0 || isLoadingMore) {
+//                    if (!mSwipeRefreshLayout.isRefreshing()) {
+//                        //mLoadingIndicator.setVisibility(View.VISIBLE);
+//                        mMainRecycleViewAdapter.changeLoadMoreStatus(BuildConfig.MAIN_LOADING_MORE);
+//                    }
                     forceLoad();
                 }
             }
@@ -366,7 +416,7 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         Log.d(TAG, "------------onLoadFinished---------------");
         if (!isLoadingMore) {
             mLoadingIndicator.setVisibility(View.INVISIBLE);
-            mSwipeRefreshLayout.setRefreshing(false);
+            // mSwipeRefreshLayout.setRefreshing(false);
             if (movies != null) {
                 showMoviesDataView();
                 mMainRecycleViewAdapter.setMovies(movies);
@@ -376,7 +426,7 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             }
         } else {
             mLoadingIndicator.setVisibility(View.INVISIBLE);
-            mSwipeRefreshLayout.setRefreshing(false);
+            // mSwipeRefreshLayout.setRefreshing(false);
             if (movies != null) {
                 showMoviesDataView();
                 mMainRecycleViewAdapter.addMovies(movies);
@@ -388,6 +438,20 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 //        if (mDrawerLayout.isDrawerOpen(mNavigationView)){
 //            mDrawerLayout.closeDrawer(mNavigationView);
 //        }
+        Configuration configuration = mActivity.getResources().getConfiguration();
+        int smallestScreenWidthDp = configuration.smallestScreenWidthDp;
+        if (smallestScreenWidthDp > 600 || configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            FragmentManager fragmentManager = mActivity.getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            Fragment curFragment = fragmentManager.findFragmentByTag(BuildConfig.DETAIL_FRAGMENT_TAG);
+            if (curFragment == null && movies != null && movies.size() > 0 ) {
+                Movie firstMovie = movies.get(0);
+                DetailFragment detailFragment = DetailFragment.newInstance(firstMovie);
+                fragmentTransaction.add(R.id.detail_fragment_container,detailFragment,BuildConfig.DETAIL_FRAGMENT_TAG);
+                fragmentTransaction.commitAllowingStateLoss();
+            }
+        }
+
         Log.d(TAG, "onLoadFinished: ####################curMovies-Size:"+curMovies.size());
         if (isLoadFromInternet && movies != null) {
             ContentValues[] contentValues = new ContentValues[movies.size()];
@@ -421,13 +485,17 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         }
         if (movies == null || movies.size() == 0) { // 没有加载出数据时，提示用户下拉刷新
             if (curMovies == null || curMovies.size() == 0) {
-                mRefreshTipDisplay.setVisibility(View.VISIBLE);
+                // mRefreshTipDisplay.setVisibility(View.VISIBLE);
             }
-        }else{
-            mRefreshTipDisplay.setVisibility(View.INVISIBLE);
         }
         isLoadingMore = false;
         mMainRecycleViewAdapter.changeLoadMoreStatus(BuildConfig.MAIN_PULLUP_LOAD_MORE);
+
+        // 数据加载完成后才能调用recycleView的跳转位置方法才会生效
+        if (isNeedScroll) {
+            mMovieListRecyclerView.scrollToPosition(firstVisiableItemPosition);
+            isNeedScroll = false;
+        }
     }
 
     @Override
@@ -474,7 +542,7 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         String selection = null;
         String[] selectionArgs = null;
         if (curSortingWay == null) {
-            SharedPreferences sharedPreferences = mActivity.getSharedPreferences(CommonPreferences.SETTING_PREF_NAME, mActivity.MODE_PRIVATE);
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
             curSortingWay = sharedPreferences.getString(CommonPreferences.SORTING_WAY, "popular");
         }
         if (curSortingWay.equals("popular")){ // 取出按热度查询的数据，并且按热度降序排序
@@ -514,11 +582,12 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             movie.setIsFavourite(cursor.getString(INDEX_COLUMN_IS_FAVOURITE));
             results.add(movie);
         }
+        cursor.close();
         return results;
     }
 
     public String getMoviesUrl() {
-        SharedPreferences sharedPreferences = mActivity.getSharedPreferences(CommonPreferences.SETTING_PREF_NAME, mActivity.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
         String curSortingSetting = sharedPreferences.getString(CommonPreferences.SORTING_WAY, "popular");
         if (curSortingWay == null) {
             curSortingWay = curSortingSetting;

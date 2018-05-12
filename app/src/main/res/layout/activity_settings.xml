@@ -8,7 +8,7 @@
 
     <android.support.v7.widget.Toolbar
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="?android:attr/actionBarSize"
         android:id="@+id/setting_toolbar"
         android:background="@color/colorPrimary"
         app:titleTextColor="@android:color/white"
@@ -22,9 +22,21 @@
             <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginTop="?attr/actionBarSize"
+                android:layout_marginTop="?android:attr/actionBarSize"
                 android:orientation="vertical"
                 android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:textSize="@dimen/text_size_16"
+                    android:text="@string/general_title"
+                    android:textColor="@color/colorSecondary" />
+
+
+
 
                 <TextView
                     android:layout_width="match_parent"
@@ -47,7 +59,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/sorting_by_popular"
                         android:textSize="@dimen/sorting_way_text_size"
-                        android:padding="12dp"/>
+                        android:padding="8dp"/>
                     <RadioButton
                         android:id="@+id/rb_popular"
                         android:layout_width="0dp"
@@ -69,7 +81,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/sorting_by_rated"
                         android:textSize="@dimen/sorting_way_text_size"
-                        android:padding="12dp"/>
+                        android:padding="8dp"/>
                     <RadioButton
                         android:id="@+id/rb_rated"
                         android:layout_width="0dp"

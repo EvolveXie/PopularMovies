@@ -13,4 +13,7 @@
     
     <color name="sorting_way_color">#00CD00</color>
     <color name="colorOpenReviewTvGreen">#00CD00</color>
+
+    <color name="select_grey">#E0E0E0</color>
+    <color name="unSelect_white">#ffffff</color>
 </resources>

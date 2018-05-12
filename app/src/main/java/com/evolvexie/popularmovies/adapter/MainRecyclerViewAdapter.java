@@ -1,6 +1,7 @@
 package com.evolvexie.popularmovies.adapter;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
@@ -33,8 +34,9 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
     private int load_more_status = BuildConfig.MAIN_PULLUP_LOAD_MORE;
 
     private MainRvAdapterClickHandler mClickHandler;
+    private int selectedPosition = 0;
     public interface MainRvAdapterClickHandler {
-        void onClick(Movie movie);
+        void onClick(Movie movie,int position);
     }
 
     public MainRecyclerViewAdapter() {
@@ -107,17 +109,32 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         ImageView mListItemImageView;
         TextView mListItemTitle;
         TextView mListItemContent;
+        View movieListItem;
 
         public MovieViewHolder(View itemView) {
             super(itemView);
             mListItemImageView = itemView.findViewById(R.id.list_item_movie_image);
             mListItemTitle = itemView.findViewById(R.id.list_item_movie_title);
             mListItemContent = itemView.findViewById(R.id.list_item_movie_content);
+            movieListItem = itemView.findViewById(R.id.movie_list_item);
             itemView.setOnClickListener(this);
         }
 
         void bind(int listIndex) {
-            String backDropPath = UrlUtils.IMAGE_BASE_URL + movies.get(listIndex).getBackdropPath();
+            String imgPath;
+            Configuration configuration = context.getResources().getConfiguration();
+            final int smallestScreenWidth = configuration.smallestScreenWidthDp;
+            final int orientation = configuration.orientation;
+            if (smallestScreenWidth > 600 || orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                imgPath = UrlUtils.IMAGE_BASE_URL + movies.get(listIndex).getPosterPath();
+                if (listIndex != selectedPosition) {
+                    movieListItem.setBackgroundColor(context.getResources().getColor(R.color.unSelect_white));
+                }else {
+                    movieListItem.setBackgroundColor(context.getResources().getColor(R.color.select_grey));
+                }
+            }else {
+                imgPath = UrlUtils.IMAGE_BASE_URL + movies.get(listIndex).getBackdropPath();
+            }
             mListItemTitle.setText(movies.get(listIndex).getTitle());
             mListItemContent.setText(movies.get(listIndex).getOverview());
             Transformation transformation = new Transformation() {
@@ -126,9 +143,18 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
                     if (source.getWidth() == 0) {
                         return source;
                     }
-                    int imgWidth = source.getWidth();
-                    int imgHeight = source.getHeight()* width/imgWidth;
-                    Bitmap result = source.createScaledBitmap(source, width, imgHeight,false);
+                    int imgWidth;
+                    int imgHeight;
+                    Bitmap result;
+                    if (smallestScreenWidth > 600 || orientation == Configuration.ORIENTATION_LANDSCAPE) { // 布局不同，在此布局下，图片高度为固定dp值
+                        imgWidth = (int) context.getResources().getDimension(R.dimen.movie_list_item_image_width);
+                        imgHeight = source.getHeight()*imgWidth/source.getWidth();
+                        result = source.createScaledBitmap(source, imgWidth, imgHeight,false);
+                    }else {
+                        imgWidth = source.getWidth();
+                        imgHeight = source.getHeight()* width/imgWidth;
+                        result = source.createScaledBitmap(source, width, imgHeight,false);
+                    }
                     if (source != result){
                         source.recycle();
                     }else {
@@ -139,21 +165,22 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
 
                 @Override
                 public String key() {
-                    return "transformation";
+                    return "mainTrans";
                 }
             };
-            Picasso.with(context).load(backDropPath)
+            Picasso.with(context).load(imgPath)
                     .transform(transformation)
                     .placeholder(R.drawable.movie_temp_image)
                     .error(R.mipmap.ic_error)
-                    .tag(movies.get(getAdapterPosition()).getBackdropPath())
+                    .tag(movies.get(getAdapterPosition()).getPosterPath())
                     .into(mListItemImageView);
         }
 
         @Override
         public void onClick(View v) {
+            selectedPosition = getAdapterPosition();
             if (mClickHandler != null) {
-                mClickHandler.onClick(movies.get(getAdapterPosition()));
+                mClickHandler.onClick(movies.get(selectedPosition),selectedPosition);
             }
         }
     }

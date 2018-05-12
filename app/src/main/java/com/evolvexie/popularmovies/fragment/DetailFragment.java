@@ -20,6 +20,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -48,6 +49,7 @@ import com.evolvexie.popularmovies.model.Video;
 import com.evolvexie.popularmovies.utils.NetUtils;
 import com.evolvexie.popularmovies.utils.UrlUtils;
 import com.google.gson.Gson;
+import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
 
@@ -59,6 +61,8 @@ import java.util.Map;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+
+import static android.content.ContentValues.TAG;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -110,12 +114,15 @@ public class DetailFragment extends Fragment {
     private Unbinder unbinder;
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private static final String ARG_MOVIE = "movie";
 
     // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private Movie mMovie;
+
+    private LoadDetailTask mLoadDetailTask;
+    private LoadReviewsTask mLoadReviewTask;
+    private LoadTrailerTask mLoadTrailerTask;
+    private UpdateMovieTask mUpdateMovieTask;
 
 
     public DetailFragment() {
@@ -126,16 +133,13 @@ public class DetailFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
      * @return A new instance of fragment DetailFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static DetailFragment newInstance(String param1, String param2) {
+    public static DetailFragment newInstance(Movie movie) {
         DetailFragment fragment = new DetailFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putParcelable(ARG_MOVIE, movie);
         fragment.setArguments(args);
         return fragment;
     }
@@ -150,8 +154,7 @@ public class DetailFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            mMovie = getArguments().getParcelable(ARG_MOVIE);
         }
     }
 
@@ -201,14 +204,20 @@ public class DetailFragment extends Fragment {
         });
         mReviewList.setNestedScrollingEnabled(false);
         // 加载电影详情数据
-        new LoadDetailTask().execute(getDetailUrl(movieId));
-        new LoadTrailerTask().execute(getTrailerUrl());
-        new LoadReviewsTask().execute(getReviewsUrl());
+        mLoadDetailTask = new LoadDetailTask();
+        mLoadDetailTask.execute(getDetailUrl(movieId));
+        mLoadTrailerTask =  new LoadTrailerTask();
+        mLoadTrailerTask.execute(getTrailerUrl());
+        mLoadReviewTask =  new LoadReviewsTask();
+        mLoadReviewTask.execute(getReviewsUrl());
     }
 
     private void initData(Intent fromIntent){
-        if (fromIntent.hasExtra("movie")){
+        if (fromIntent.hasExtra("movie") || mMovie != null){
             Movie movie = fromIntent.getParcelableExtra("movie");
+            if (mMovie != null) {
+                movie = mMovie;
+            }
             if (movie == null) {
                 return;
             }
@@ -221,7 +230,9 @@ public class DetailFragment extends Fragment {
                         return source;
                     }
                     int imgWidth = source.getWidth();
+                    Log.i(TAG, "detail------------transform: imgWidth" + imgWidth);
                     int imgHeight = source.getHeight()* width/imgWidth;
+                    Log.i(TAG, "detail------------transform: imgHeight" + imgHeight);
                     Bitmap result = source.createScaledBitmap(source, width, imgHeight,false);
                     if (source != result){
                         source.recycle();
@@ -233,7 +244,7 @@ public class DetailFragment extends Fragment {
 
                 @Override
                 public String key() {
-                    return "transformation";
+                    return "detailPosterTrans";
                 }
             };
             String backdropPath = UrlUtils.IMAGE_DETAIL_URL + movie.getBackdropPath();
@@ -246,6 +257,7 @@ public class DetailFragment extends Fragment {
             String posterPath = UrlUtils.IMAGE_DETAIL_URL + movie.getPosterPath();
             Picasso.with(mActivity)
                     .load(posterPath).transform(transformation)
+                    .memoryPolicy(MemoryPolicy.NO_CACHE)
                     .placeholder(R.drawable.movie_temp_image)
                     .error(R.mipmap.ic_error)
                     .into(mPosterImageView);
@@ -261,6 +273,7 @@ public class DetailFragment extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.detail,menu);
         this.menu = menu;
 //        if ("Y".equals(curMovie.getIsFavourite())){
 //            MenuItem collectItem = menu.findItem(R.id.action_collect);
@@ -284,7 +297,8 @@ public class DetailFragment extends Fragment {
                     item.setIcon(R.mipmap.favourite_white);
                     item.setTitle(getResources().getString(R.string.favourite));
                 }
-                new UpdateMovieTask().execute(curMovie);
+                mUpdateMovieTask = new UpdateMovieTask();
+                mUpdateMovieTask.execute(curMovie);
                 break;
             case android.R.id.home: //toolBar箭头
                 mActivity.finish();
@@ -340,7 +354,7 @@ public class DetailFragment extends Fragment {
 
         @Override
         protected void onPostExecute(MovieDetail movieDetail) {
-            if (movieDetail != null) {
+            if (movieDetail != null && isAdded()) {
                 mMovieRuntimeTextView.setText(getResources().getString(R.string.label_runtime)+" "
                         +String.valueOf(movieDetail.getRuntime())
                         +getResources().getString(R.string.label_runtime_unit));
@@ -475,6 +489,7 @@ public class DetailFragment extends Fragment {
             if (cursor.moveToNext()) {
                 Movie movie = new Movie();
                 movie.setIsFavourite(cursor.getString(0));
+                cursor.close();
                 return movie;
             }
             return null;
@@ -482,7 +497,7 @@ public class DetailFragment extends Fragment {
 
         @Override
         protected void onPostExecute(Movie movie) {
-            if (movie != null) {
+            if (movie != null && isAdded()) {
                 MenuItem favourite = menu.findItem(R.id.action_collect);
                 if ("Y".equals(movie.getIsFavourite())){
                     favourite.setIcon(R.mipmap.favourite_orange);
@@ -497,5 +512,26 @@ public class DetailFragment extends Fragment {
         values.put(MoviesContract.MoviesEntry.COLUMN_MOVIE_ID,movie.getId());
         values.put(MoviesContract.MoviesEntry.COLUMN_IS_FAVOURITE,movie.getIsFavourite());
         return values;
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (mLoadDetailTask != null) {
+            mLoadDetailTask.cancel(true);
+            Log.i(TAG, "onStop: mLoadDetailTask" + "had been stopped");
+        }
+        if (mLoadTrailerTask != null) {
+            mLoadTrailerTask.cancel(true);
+            Log.i(TAG, "onStop: mLoadTrailerTask" + "had been stopped");
+        }
+        if (mLoadReviewTask != null) {
+            mLoadReviewTask.cancel(true);
+            Log.i(TAG, "onStop: mLoadReviewTask" + "had been stopped");
+        }
+        if (mUpdateMovieTask != null) {
+            mUpdateMovieTask.cancel(true);
+            Log.i(TAG, "onStop: mUpdateMovieTask" + "had been stopped");
+        }
     }
 }

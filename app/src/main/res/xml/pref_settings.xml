@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="@string/general_title">
+        <ListPreference android:title="@string/sorting_way"
+            android:key="@string/pref_key_sorting_way"
+            android:defaultValue="@string/sorting_way_popular"
+            android:entries="@array/pref_sorting_way_titles"
+            android:entryValues="@array/pref_sorting_way_values"
+            />
+        <ListPreference android:title="@string/sync_frequency"
+            android:key="@string/pref_key_sync_frequency"
+            android:defaultValue="@string/pref_default_sync_frequency"
+            android:entries="@array/pref_sync_frequency_titles"
+            android:entryValues="@array/pref_sync_frequency_values"
+            />
+
+        <SwitchPreferenceCompat android:title="@string/pref_title_notification"
+            android:key="@string/pref_key_notification"
+            android:defaultValue="true"
+            android:summaryOn="@string/pref_text_notification_on"
+            android:summaryOff="@string/pref_text_notification_off"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/other_title">
+        <Preference android:title="@string/pref_title_system_sync_settings">
+            <intent android:action="android.settings.SYNC_SETTINGS" />
+        </Preference>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
