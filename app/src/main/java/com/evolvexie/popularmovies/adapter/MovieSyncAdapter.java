@@ -28,9 +28,11 @@ import com.evolvexie.popularmovies.model.Movie;
 import com.evolvexie.popularmovies.model.PopularMovie;
 import com.evolvexie.popularmovies.utils.NetUtils;
 import com.evolvexie.popularmovies.utils.NotificationUtils;
+import com.evolvexie.popularmovies.utils.SharedPreferenceUtil;
 import com.evolvexie.popularmovies.utils.UrlUtils;
 import com.google.gson.Gson;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -76,6 +78,11 @@ public class MovieSyncAdapter extends AbstractThreadedSyncAdapter {
      */
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
+        // 保存同步时间
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = new Date();
+        String nowTime = format.format(date);
+        SharedPreferenceUtil.saveSharedPreferenceData(getContext(),BuildConfig.LAST_TIME_SYNC_KEY,nowTime);
         new SyncPopularThread().start();
         new SyncRatedThread().start();
     }

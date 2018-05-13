@@ -8,6 +8,7 @@ import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.preference.PreferenceGroup;
 import android.support.v7.preference.PreferenceManager;
 
+import com.evolvexie.popularmovies.BuildConfig;
 import com.evolvexie.popularmovies.R;
 import com.evolvexie.popularmovies.adapter.MovieSyncAdapter;
 import com.evolvexie.popularmovies.data.CommonPreferences;
@@ -59,6 +60,13 @@ public class SettingsPreferenceFragment extends PreferenceFragmentCompat impleme
         if (p instanceof ListPreference) {
             ListPreference listPref = (ListPreference) p;
             p.setSummary(listPref.getEntry());
+        }
+        if (BuildConfig.LAST_TIME_SYNC_KEY.equals(p.getKey())){ // 上次同步时间
+            String lastSyncTime = CommonPreferences.getDefaultSharedPreferenceValue(getContext(),
+                    BuildConfig.LAST_TIME_SYNC_KEY,"");
+            String tipText = getResources().getString(R.string.pref_text_last_sync_time);
+            String summary = String.format(tipText,lastSyncTime);
+            p.setSummary(summary);
         }
     }
 }

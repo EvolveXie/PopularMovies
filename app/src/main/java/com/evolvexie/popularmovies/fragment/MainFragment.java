@@ -56,6 +56,17 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+/**
+ * 主界面
+ * 数据加载规则：
+ * - 电影列表
+ *      1、任何情况下首先从数据库加载数据（根据用户设定的排序方式）
+ *      2、数据库查询数据为空，则再从网络加载数据
+ *      3、应用打开时进行本地与服务器数据的同步
+ *      4、根据用户设定的同步频率定时同步
+ * - 收藏列表
+ *      1、只从数据库查询数据，没有则提示无收藏电影
+ */
 public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener,
         MainRecyclerViewAdapter.MainRvAdapterClickHandler,
         LoaderManager.LoaderCallbacks<List<Movie>>{
@@ -68,13 +79,9 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 
     private static final String MOVIES_URL_KEY = "moviesUrl";
     private static final String MOVIES_IS_LOADING_MORE_KEY = "isLoadingMore";
+
+    // 表示正在进行的数据查询是不是从网络获取数据(数据来源网络时需要将查询出的数据存入数据库)
     private boolean isLoadFromInternet = false;
-    /*
-     * 当前加载模式(网络还是本地)
-     * 0 : 本地数据库
-     * 1 ：网络数据
-     */
-    private int curLoadingWay = 0;
 
     public static final String[] MAIN_MOVIE_COLUMN = {
             MoviesContract.MoviesEntry.COLUMN_MOVIE_ID,
@@ -110,16 +117,10 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     TextView mErrorMessageDisplay;
 
     private MainRecyclerViewAdapter mMainRecycleViewAdapter;
-    // 使用了Sync Adapter后不再需要刷新操作
-//    @BindView(R.id.srl_refresh)
-//    SwipeRefreshLayout mSwipeRefreshLayout;
-//    @BindView(R.id.tv_show_refresh_tip)
-//    TextView mRefreshTipDisplay;
 
     private final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
     private boolean isLoadingMore = false; // 标志现在是否正在进行上划加载更多(防止多次上划手势而启动了多个后台线程)
     private int currentPage = 0;
-    private String curUrl = null;   // a flag that show if sorting wat had been changed in setting
     private List<Movie> curMovies = new ArrayList<>();
     private String curSortingWay = null;
     // 当前展示的是普通电影列表还是显示的我的收藏的列表
@@ -138,16 +139,6 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     private int firstVisiableItemPosition = 0;
     // 是否需要跳转到销毁前的滚动位置（跳转过后需要置为false）
     private boolean isNeedScroll = false;
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    //private OnFragmentInteractionListener mListener;
 
     public MainFragment() {
         // Required empty public constructor
@@ -156,28 +147,16 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
      * @return A new instance of fragment MainFragment.
      */
-    // TODO: Rename and change types and number of parameters
-    public static MainFragment newInstance(String param1, String param2) {
+    public static MainFragment newInstance() {
         MainFragment fragment = new MainFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
         return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
 
     }
 
@@ -201,9 +180,6 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 
         mActivity = (MainActivity) getActivity();
 
-//        mSwipeRefreshLayout.setColorSchemeResources(R.color.colorAccent, R.color.colorPrimary);
-//        mSwipeRefreshLayout.setOnRefreshListener(this);
-
         mMovieListRecyclerView.setLayoutManager(linearLayoutManager);
         mMovieListRecyclerView.setHasFixedSize(true);
 
@@ -217,18 +193,7 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                     if (!isLoadingMore && !isAllBeenQuery) {
                         isLoadingMore = true;
                         mMainRecycleViewAdapter.changeLoadMoreStatus(BuildConfig.MAIN_LOADING_MORE);
-                        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
-                        boolean isFirstTime = sharedPreferences.getBoolean(CommonPreferences.IS_FIRST_LOADING, true);
-                        if (isFirstTime) {
-                            fetchMovieDatas(MOVIES_INTERNET_LOADER, isLoadingMore);
-                            sharedPreferences.edit().putBoolean(CommonPreferences.IS_FIRST_LOADING, false).apply();
-                        } else {
-                            if (curLoadingWay == 0) {
-                                fetchMovieDatas(MOVIES_INTERNET_LOADER, isLoadingMore);
-                            }else {
-                                fetchMovieDatas(MOVIES_CURSOR_LOADER, isLoadingMore);
-                            }
-                        }
+                        fetchMovieDatas(MOVIES_CURSOR_LOADER, isLoadingMore);
                     }
                 }
             }
@@ -268,13 +233,7 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             mMovieListRecyclerView.setAdapter(mMainRecycleViewAdapter);
 
             showMoviesDataView();
-            boolean isFirstTime = sharedPreferences.getBoolean(CommonPreferences.IS_FIRST_LOADING, true);
-            if (isFirstTime){
-                fetchMovieDatas(MOVIES_INTERNET_LOADER,false);
-                sharedPreferences.edit().putBoolean(CommonPreferences.IS_FIRST_LOADING,false).apply();
-            }else {
-                fetchMovieDatas(MOVIES_CURSOR_LOADER,false);
-            }
+            fetchMovieDatas(MOVIES_CURSOR_LOADER,false);
         }
     }
 
@@ -398,10 +357,7 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                  * isLoadingMore表示正在上划加载更多
                  */
                 if (curMovies == null || curMovies.size() == 0 || isLoadingMore) {
-//                    if (!mSwipeRefreshLayout.isRefreshing()) {
-//                        //mLoadingIndicator.setVisibility(View.VISIBLE);
-//                        mMainRecycleViewAdapter.changeLoadMoreStatus(BuildConfig.MAIN_LOADING_MORE);
-//                    }
+                    mLoadingIndicator.setVisibility(View.VISIBLE);
                     forceLoad();
                 }
             }
@@ -417,38 +373,51 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         if (!isLoadingMore) {
             mLoadingIndicator.setVisibility(View.INVISIBLE);
             // mSwipeRefreshLayout.setRefreshing(false);
-            if (movies != null) {
+            if (movies != null && movies.size() > 0) {
                 showMoviesDataView();
                 mMainRecycleViewAdapter.setMovies(movies);
                 curMovies.addAll(movies);
             } else {
-                showErrorMessage();
+                if (!isLoadFromInternet) { // 如果不是从网络加载数据而查询数据为空，则继续尝试使用网络加载数据
+                    currentPage--;//失败了要将当前页码减一，因为在上次获取url后加了1
+                    fetchMovieDatas(MOVIES_INTERNET_LOADER,isLoadingMore);
+                    return;
+                }else {
+                    showErrorMessage();
+                }
             }
         } else {
             mLoadingIndicator.setVisibility(View.INVISIBLE);
             // mSwipeRefreshLayout.setRefreshing(false);
-            if (movies != null) {
+            if (movies != null && movies.size() > 0) {
                 showMoviesDataView();
                 mMainRecycleViewAdapter.addMovies(movies);
                 curMovies.addAll(movies);
             } else {
-                showErrorMessage();
+                if (!isLoadFromInternet) { // 如果不是从网络加载数据而查询数据为空，则继续尝试使用网络加载数据
+                    currentPage--;//失败了要将当前页码减一，因为在上次获取url后加了1
+                    fetchMovieDatas(MOVIES_INTERNET_LOADER,isLoadingMore);
+                    return;
+                }else {
+                    showErrorMessage();
+                }
             }
         }
-//        if (mDrawerLayout.isDrawerOpen(mNavigationView)){
-//            mDrawerLayout.closeDrawer(mNavigationView);
-//        }
+
+        // 平板或者横屏模式下加载右边详情界面
         Configuration configuration = mActivity.getResources().getConfiguration();
         int smallestScreenWidthDp = configuration.smallestScreenWidthDp;
         if (smallestScreenWidthDp > 600 || configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            FragmentManager fragmentManager = mActivity.getSupportFragmentManager();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            Fragment curFragment = fragmentManager.findFragmentByTag(BuildConfig.DETAIL_FRAGMENT_TAG);
-            if (curFragment == null && movies != null && movies.size() > 0 ) {
-                Movie firstMovie = movies.get(0);
-                DetailFragment detailFragment = DetailFragment.newInstance(firstMovie);
-                fragmentTransaction.add(R.id.detail_fragment_container,detailFragment,BuildConfig.DETAIL_FRAGMENT_TAG);
-                fragmentTransaction.commitAllowingStateLoss();
+            if (movies != null && movies.size() > 0) {
+                FragmentManager fragmentManager = mActivity.getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                Fragment curFragment = fragmentManager.findFragmentByTag(BuildConfig.DETAIL_FRAGMENT_TAG);
+                if (curFragment == null) {
+                    Movie firstMovie = movies.get(0);
+                    DetailFragment detailFragment = DetailFragment.newInstance(firstMovie);
+                    fragmentTransaction.add(R.id.detail_fragment_container,detailFragment,BuildConfig.DETAIL_FRAGMENT_TAG);
+                    fragmentTransaction.commitAllowingStateLoss();
+                }
             }
         }
 
@@ -608,9 +577,6 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         if (loaderId == MOVIES_INTERNET_LOADER) {
             queryBundle.putString(MOVIES_URL_KEY,getMoviesUrl());
             queryBundle.putBoolean(MOVIES_IS_LOADING_MORE_KEY,isLoadingMore);
-            curLoadingWay = 0; //切换数据加载来源为网络
-        }else {
-            curLoadingWay = 1;//切换数据加载来源为数据库
         }
         LoaderManager loaderManager = mActivity.getSupportLoaderManager();
         Loader<List<Movie>> loader =  loaderManager.getLoader(loaderId);

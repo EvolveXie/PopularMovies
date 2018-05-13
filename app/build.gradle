@@ -18,6 +18,7 @@ android {
         buildConfigField("String", "DETAIL_FRAGMENT_TAG", "\"DETAIL_FRAGMENT\"")
         buildConfigField("String", "MAIN_LIST_POSITION", "\"MAIN_LIST_POSITION\"")
         buildConfigField("int", "SYNC_MAX_PAGE", "25")
+        buildConfigField("String","LAST_TIME_SYNC_KEY","\"LAST_TIME_SYNC_KEY\"")
     }
     buildTypes {
         release {
@@ -44,7 +45,7 @@ dependencies {
     implementation 'com.android.support:support-v4:26.1.0'
     implementation 'com.android.support:support-vector-drawable:26.1.0'
     implementation 'com.jakewharton:butterknife:8.5.1'
-    implementation 'com.android.support:preference-v7:26.1.0'
+    implementation 'com.android.support:preference-v14:26.1.0'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
     testImplementation 'junit:junit:4.12'
 }

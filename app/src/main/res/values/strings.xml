@@ -139,4 +139,7 @@
     <string name="pref_key_notification" translatable="false">notification_setting</string>
     <string name="pref_text_notification_on">开启</string>
     <string name="pref_text_notification_off">关闭</string>
+    <string name="pref_title_last_sync">上次同步时间</string>
+    <string name="pref_key_last_sync_time" translatable="false">LAST_TIME_SYNC_KEY</string><!-- 和buildConfig中的保持一致 -->
+    <string name="pref_text_last_sync_time">上次同步时间：%1$s</string>
 </resources>

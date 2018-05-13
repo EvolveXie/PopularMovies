@@ -15,7 +15,13 @@ import android.util.Log;
 import android.view.MenuItem;
 
 import com.evolvexie.popularmovies.adapter.MovieSyncAdapter;
+import com.evolvexie.popularmovies.data.CommonPreferences;
 import com.evolvexie.popularmovies.fragment.MainFragment;
+import com.evolvexie.popularmovies.utils.SharedPreferenceUtil;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -50,10 +56,8 @@ public class MainActivity extends AppCompatActivity implements
 
         mNavigationView.setNavigationItemSelectedListener(this);
         Account account = MovieSyncAdapter.getAccount(this);
-        if (account != null) { // 打开时进行一次数据同步(校验是否正在同步)
-            if (!ContentResolver.isSyncActive(account,MovieSyncAdapter.AUTHORITY)){
-                MovieSyncAdapter.performSync(this,account);
-            }
+        if (account != null) { // 打开时进行一次数据同步
+            syncData(account);
         }
     }
 
@@ -69,4 +73,35 @@ public class MainActivity extends AppCompatActivity implements
         return mainFragment.navigationItemSelect(item,mDrawerLayout);
     }
 
+    public void syncData(Account account){
+        // 最近同步时间
+        String lastSyncTime = CommonPreferences.getDefaultSharedPreferenceValue(this,
+                BuildConfig.LAST_TIME_SYNC_KEY,"");
+        if (!lastSyncTime.equals("")){
+            // 用户设定的同步频率(小时)
+            int syncFrequency = CommonPreferences.getDefaultSharedPreferenceIntValue(this,
+                    this.getResources().getString(R.string.pref_key_sync_frequency),
+                    this.getResources().getString(R.string.pref_default_sync_frequency));
+            Date nowDate = new Date();
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date lastSyncDate = null;
+            try {
+                lastSyncDate = format.parse(lastSyncTime);
+            } catch (ParseException e) {
+                Log.e(TAG, "syncData: 转换日期异常",e);
+                return;
+            }
+            long between = nowDate.getTime() - lastSyncDate.getTime();
+            Log.d(TAG, "syncData: interval time :" + between / (1 * 60 * 60 * 1000));
+            if (between / (1 * 60 * 60 * 1000) > syncFrequency) {
+                if (!ContentResolver.isSyncActive(account,MovieSyncAdapter.AUTHORITY)){
+                    MovieSyncAdapter.performSync(this,account);
+                }
+            }
+        }else {
+            if (!ContentResolver.isSyncActive(account,MovieSyncAdapter.AUTHORITY)){
+                MovieSyncAdapter.performSync(this,account);
+            }
+        }
+    }
 }

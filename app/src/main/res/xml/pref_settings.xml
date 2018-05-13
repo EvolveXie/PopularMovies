@@ -23,6 +23,11 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/other_title">
+
+        <Preference android:title="@string/pref_title_last_sync"
+            android:key="@string/pref_key_last_sync_time"
+            />
+
         <Preference android:title="@string/pref_title_system_sync_settings">
             <intent android:action="android.settings.SYNC_SETTINGS" />
         </Preference>
