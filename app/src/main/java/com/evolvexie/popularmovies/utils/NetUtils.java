@@ -2,11 +2,7 @@ package com.evolvexie.popularmovies.utils;
 
 import android.util.Log;
 
-import com.evolvexie.popularmovies.model.Movie;
-import com.evolvexie.popularmovies.model.PopularMovie;
-
 import java.io.IOException;
-import java.net.URL;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;

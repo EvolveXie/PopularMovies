@@ -1,15 +1,13 @@
 package com.evolvexie.popularmovies;
 
 import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.content.ContentResolver;
-import android.content.Context;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
@@ -17,7 +15,6 @@ import android.view.MenuItem;
 import com.evolvexie.popularmovies.adapter.MovieSyncAdapter;
 import com.evolvexie.popularmovies.data.CommonPreferences;
 import com.evolvexie.popularmovies.fragment.MainFragment;
-import com.evolvexie.popularmovies.utils.SharedPreferenceUtil;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

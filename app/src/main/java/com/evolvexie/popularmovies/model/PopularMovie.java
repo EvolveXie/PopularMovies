@@ -1,7 +1,6 @@
 package com.evolvexie.popularmovies.model;
 
 
-import com.evolvexie.popularmovies.model.Movie;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;

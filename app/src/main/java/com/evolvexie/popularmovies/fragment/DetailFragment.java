@@ -18,7 +18,6 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -35,7 +34,6 @@ import android.widget.ScrollView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
-import com.evolvexie.popularmovies.DetailActivity;
 import com.evolvexie.popularmovies.R;
 import com.evolvexie.popularmovies.adapter.ReviewRecyclerViewAdapter;
 import com.evolvexie.popularmovies.data.KeyPreferences;

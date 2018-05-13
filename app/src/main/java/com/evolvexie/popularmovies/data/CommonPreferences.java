@@ -39,4 +39,16 @@ public class CommonPreferences {
         sharedPreferences.edit().putString(key,value);
     }
 
+    public static void saveSettingPreferenceDataMutiMode(Context context,String key,String value){
+        SharedPreferences sharedPreferences = context.getSharedPreferences(SETTING_PREF_NAME,Context.MODE_MULTI_PROCESS);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(key,value);
+        editor.apply();
+    }
+
+    public static String getSettingPreferenceDataMutiMode(Context context,String key,String defaultValue){
+        SharedPreferences sharedPreferences = context.getSharedPreferences(SETTING_PREF_NAME,Context.MODE_MULTI_PROCESS);
+        return sharedPreferences.getString(key,defaultValue);
+    }
+
 }

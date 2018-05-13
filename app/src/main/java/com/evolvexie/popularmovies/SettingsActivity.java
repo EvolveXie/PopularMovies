@@ -1,29 +1,11 @@
 package com.evolvexie.popularmovies;
 
-import android.content.ActivityNotFoundException;
-import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.AsyncTaskLoader;
-import android.support.v4.content.Loader;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.RadioButton;
-
-import com.evolvexie.popularmovies.data.CommonPreferences;
-import com.evolvexie.popularmovies.model.MovieDetail;
-import com.evolvexie.popularmovies.utils.NetUtils;
-import com.evolvexie.popularmovies.utils.UrlUtils;
-import com.google.gson.Gson;
-
-import java.net.URL;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

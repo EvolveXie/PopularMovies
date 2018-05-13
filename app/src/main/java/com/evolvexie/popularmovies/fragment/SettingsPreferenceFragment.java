@@ -6,7 +6,6 @@ import android.support.v7.preference.ListPreference;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.preference.PreferenceGroup;
-import android.support.v7.preference.PreferenceManager;
 
 import com.evolvexie.popularmovies.BuildConfig;
 import com.evolvexie.popularmovies.R;
@@ -62,7 +61,7 @@ public class SettingsPreferenceFragment extends PreferenceFragmentCompat impleme
             p.setSummary(listPref.getEntry());
         }
         if (BuildConfig.LAST_TIME_SYNC_KEY.equals(p.getKey())){ // 上次同步时间
-            String lastSyncTime = CommonPreferences.getDefaultSharedPreferenceValue(getContext(),
+            String lastSyncTime = CommonPreferences.getSettingPreferenceDataMutiMode(getContext(),
                     BuildConfig.LAST_TIME_SYNC_KEY,"");
             String tipText = getResources().getString(R.string.pref_text_last_sync_time);
             String summary = String.format(tipText,lastSyncTime);

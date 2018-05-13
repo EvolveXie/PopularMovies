@@ -2,20 +2,14 @@ package com.evolvexie.popularmovies.adapter;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.app.PendingIntent;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.SyncResult;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import com.evolvexie.popularmovies.BuildConfig;
@@ -23,12 +17,10 @@ import com.evolvexie.popularmovies.R;
 import com.evolvexie.popularmovies.data.CommonPreferences;
 import com.evolvexie.popularmovies.data.KeyPreferences;
 import com.evolvexie.popularmovies.data.MoviesContract;
-import com.evolvexie.popularmovies.data.MoviesProvider;
 import com.evolvexie.popularmovies.model.Movie;
 import com.evolvexie.popularmovies.model.PopularMovie;
 import com.evolvexie.popularmovies.utils.NetUtils;
 import com.evolvexie.popularmovies.utils.NotificationUtils;
-import com.evolvexie.popularmovies.utils.SharedPreferenceUtil;
 import com.evolvexie.popularmovies.utils.UrlUtils;
 import com.google.gson.Gson;
 
@@ -82,7 +74,7 @@ public class MovieSyncAdapter extends AbstractThreadedSyncAdapter {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date date = new Date();
         String nowTime = format.format(date);
-        SharedPreferenceUtil.saveSharedPreferenceData(getContext(),BuildConfig.LAST_TIME_SYNC_KEY,nowTime);
+        CommonPreferences.saveSettingPreferenceDataMutiMode(mContext, BuildConfig.LAST_TIME_SYNC_KEY,nowTime);
         new SyncPopularThread().start();
         new SyncRatedThread().start();
     }
