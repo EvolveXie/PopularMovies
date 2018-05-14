@@ -216,7 +216,9 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         super.onStart();
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
         String curSortingSetting = sharedPreferences.getString(CommonPreferences.SORTING_WAY, "popular");
-        if ("popular".equals(curSortingSetting) || curSortingSetting == null){
+        if (curShowing == SHOWING_FAVOURITE) {
+            mActivity.getSupportActionBar().setTitle(R.string.menu_title_favourite);
+        }else if ("popular".equals(curSortingSetting) || curSortingSetting == null){
             mActivity.getSupportActionBar().setTitle(R.string.main_activity_name_popular);
         }else {
             mActivity.getSupportActionBar().setTitle(R.string.main_activity_name_rate);
@@ -379,8 +381,10 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                 curMovies.addAll(movies);
             } else {
                 if (!isLoadFromInternet) { // 如果不是从网络加载数据而查询数据为空，则继续尝试使用网络加载数据
-                    currentPage--;//失败了要将当前页码减一，因为在上次获取url后加了1
-                    fetchMovieDatas(MOVIES_INTERNET_LOADER,isLoadingMore);
+                    if (curShowing != SHOWING_FAVOURITE) {
+                        currentPage--;//失败了要将当前页码减一，因为在上次获取url后加了1
+                        fetchMovieDatas(MOVIES_INTERNET_LOADER,isLoadingMore);
+                    }
                     return;
                 }else {
                     showErrorMessage();
@@ -395,8 +399,10 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                 curMovies.addAll(movies);
             } else {
                 if (!isLoadFromInternet) { // 如果不是从网络加载数据而查询数据为空，则继续尝试使用网络加载数据
-                    currentPage--;//失败了要将当前页码减一，因为在上次获取url后加了1
-                    fetchMovieDatas(MOVIES_INTERNET_LOADER,isLoadingMore);
+                    if (curShowing != SHOWING_FAVOURITE) {
+                        currentPage--;//失败了要将当前页码减一，因为在上次获取url后加了1
+                        fetchMovieDatas(MOVIES_INTERNET_LOADER,isLoadingMore);
+                    }
                     return;
                 }else {
                     showErrorMessage();
@@ -597,8 +603,16 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             case R.id.action_movies: //侧边栏选择电影列表
                 isAllBeenQuery = false;
                 if (curShowing != SHOWING_MOVIES){
+                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
+                    String curSortingSetting = sharedPreferences.getString(CommonPreferences.SORTING_WAY, "popular");
+                    if ("popular".equals(curSortingSetting) || curSortingSetting == null){
+                        mActivity.getSupportActionBar().setTitle(R.string.main_activity_name_popular);
+                    }else {
+                        mActivity.getSupportActionBar().setTitle(R.string.main_activity_name_rate);
+                    }
                     currentPage = 0;
                     curShowing = SHOWING_MOVIES;
+                    isLoadingMore = false; // 防止当前页面是加载更多模式，影响切换页面的数据显示
                     curMovies.clear();
                     fetchMovieDatas(MOVIES_CURSOR_LOADER,false);
                 }
@@ -608,6 +622,8 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                 if (curShowing != SHOWING_FAVOURITE){
                     currentPage = 0;
                     curShowing = SHOWING_FAVOURITE;
+                    mActivity.getSupportActionBar().setTitle(R.string.menu_title_favourite);
+                    isLoadingMore = false;
                     curMovies.clear();
                     fetchMovieDatas(MOVIES_CURSOR_LOADER,false);
                 }

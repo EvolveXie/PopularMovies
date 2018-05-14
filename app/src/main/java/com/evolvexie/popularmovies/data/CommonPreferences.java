@@ -36,7 +36,9 @@ public class CommonPreferences {
 
     public static void setDefaultSharedPreferenceValue(Context context,String key,String value){
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        sharedPreferences.edit().putString(key,value);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(key,value);
+        editor.apply();
     }
 
     public static void saveSettingPreferenceDataMutiMode(Context context,String key,String value){

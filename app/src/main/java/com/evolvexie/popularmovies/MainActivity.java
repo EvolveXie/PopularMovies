@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements
 
     public void syncData(Account account){
         // 最近同步时间
-        String lastSyncTime = CommonPreferences.getDefaultSharedPreferenceValue(this,
+        String lastSyncTime = CommonPreferences.getSettingPreferenceDataMutiMode(this,
                 BuildConfig.LAST_TIME_SYNC_KEY,"");
         if (!lastSyncTime.equals("")){
             // 用户设定的同步频率(小时)

@@ -174,20 +174,20 @@ public class MovieSyncAdapter extends AbstractThreadedSyncAdapter {
                 for (Movie movie : movies) {
                     String movieId = String.valueOf(movie.getId());
                     if (currentPage == 1 && j == 0) {
-                        String bestMovieId = CommonPreferences.getDefaultSharedPreferenceValue(mContext,
+                        String bestMovieId = CommonPreferences.getDefaultSharedPreferenceValue(getContext(),
                                 bestMovieKey,
                                 "");
                         if ("".equals(bestMovieId) || !bestMovieId.equals(movieId)){ // 第一次需要写入，或者第一名变更
-                            CommonPreferences.setDefaultSharedPreferenceValue(mContext,
+                            CommonPreferences.setDefaultSharedPreferenceValue(getContext(),
                                     bestMovieKey,
                                     String.valueOf(movieId));
                             if (!bestMovieId.equals(movieId) && !"".equals(bestMovieId)) { // 发送通知
-                                if (NotificationUtils.isNotify(mContext)){
+                                if (NotificationUtils.isNotify(getContext())){
                                     String content = mContext.getResources().getString(R.string.notification_content_first_change);
                                     content = String.format(content,
                                             notificationContent,
                                             movie.getTitle());
-                                    NotificationUtils.createAndSendFirstChangeNotification(mContext,content,intentId);
+                                    NotificationUtils.createAndSendFirstChangeNotification(getContext(),content,intentId);
                                 }
                             }
                         }
@@ -210,7 +210,7 @@ public class MovieSyncAdapter extends AbstractThreadedSyncAdapter {
                     j++;
                 }
                 Uri uri = MoviesContract.MoviesEntry.CONTENT_URI;
-                mContext.getContentResolver().bulkInsert(uri, contentValues);
+                getContext().getContentResolver().bulkInsert(uri, contentValues);
                 Log.d(TAG, "Sync "+sortingWay+" movie with page " + currentPage + " successful");
             }else {
                 Log.d(TAG, "Sync "+sortingWay+" movie with page " + currentPage + " failed");
