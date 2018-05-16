@@ -216,8 +216,6 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             this.movies.addAll(movies);
             notifyDataSetChanged();
         }
-        Log.d(TAG, "addMovies: #####################"+movies.size());
-        Log.d(TAG, "addMovies: #####################"+this.movies.size());
     }
 
     public void changeLoadMoreStatus(int status){

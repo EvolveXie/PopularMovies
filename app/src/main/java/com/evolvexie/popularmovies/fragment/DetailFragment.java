@@ -273,13 +273,14 @@ public class DetailFragment extends Fragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.detail,menu);
         this.menu = menu;
-//        if ("Y".equals(curMovie.getIsFavourite())){
-//            MenuItem collectItem = menu.findItem(R.id.action_collect);
-//            collectItem.setIcon(R.mipmap.favourite_orange);
-//            collectItem.setTitle(getResources().getString(R.string.cancel_favourite));
-//        }else if (TextUtils.isEmpty(curMovie.getIsFavourite())) {
-            new LoadDetailFromDbTask().execute(String.valueOf(curMovie.getId()));
-//        }
+        if (curMovie != null && isAdded()) {
+            MenuItem favourite = menu.findItem(R.id.action_collect);
+            if (curMovie.isFavourite()){
+                favourite.setIcon(R.mipmap.favourite_orange);
+                favourite.setTitle(getResources().getString(R.string.cancel_favourite));
+            }
+        }
+        //new LoadDetailFromDbTask().execute(String.valueOf(curMovie.getId()));
     }
 
     @Override
@@ -467,7 +468,11 @@ public class DetailFragment extends Fragment {
         @Override
         protected void onPostExecute(Integer count) {
             if (count > 0) {
-                Snackbar.make(mScrollView, getResources().getString(R.string.favourite_add_tip), Snackbar.LENGTH_SHORT).show();
+                if (mMovie.isFavourite()) {
+                    Snackbar.make(mScrollView, getResources().getString(R.string.favourite_add_tip), Snackbar.LENGTH_SHORT).show();
+                }else {
+                    Snackbar.make(mScrollView, getResources().getString(R.string.favourite_cancel_tip), Snackbar.LENGTH_SHORT).show();
+                }
             }
         }
     }
@@ -497,7 +502,7 @@ public class DetailFragment extends Fragment {
         protected void onPostExecute(Movie movie) {
             if (movie != null && isAdded()) {
                 MenuItem favourite = menu.findItem(R.id.action_collect);
-                if ("Y".equals(movie.getIsFavourite())){
+                if (movie.isFavourite()){
                     favourite.setIcon(R.mipmap.favourite_orange);
                     favourite.setTitle(getResources().getString(R.string.cancel_favourite));
                 }

@@ -12,10 +12,6 @@ import butterknife.ButterKnife;
 
 public class SettingsActivity extends AppCompatActivity implements View.OnClickListener {
 
-//    @BindView(R.id.rb_popular)
-//    RadioButton mSetSortingByPopular;
-//    @BindView(R.id.rb_rated)
-//    RadioButton mSetSortingByRated;
     @BindView(R.id.setting_toolbar)
     Toolbar mToolbar;
 
@@ -28,34 +24,11 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(true);
 
-//        SharedPreferences sharedPreferences = getSharedPreferences(CommonPreferences.SETTING_PREF_NAME,MODE_PRIVATE);
-//        String curSortingSetting = sharedPreferences.getString(CommonPreferences.SORTING_WAY,"popular");
-//        if (curSortingSetting.equals("popular")){
-//            mSetSortingByPopular.setChecked(true);
-//            mSetSortingByRated.setChecked(false);
-//        }else{
-//            mSetSortingByPopular.setChecked(false);
-//            mSetSortingByRated.setChecked(true);
-//        }
-//
-//        mSetSortingByPopular.setOnClickListener(this);
-//        mSetSortingByRated.setOnClickListener(this);
-
-
     }
 
     @Override
     public void onClick(View v) {
-        int viewId = v.getId();
-//        if(viewId == R.id.rb_popular){
-//            mSetSortingByPopular.setChecked(true);
-//            mSetSortingByRated.setChecked(false);
-//            saveSettingsData(CommonPreferences.SORTING_WAY,"popular");
-//        }else if(viewId == R.id.rb_rated){
-//            mSetSortingByPopular.setChecked(false);
-//            mSetSortingByRated.setChecked(true);
-//            saveSettingsData(CommonPreferences.SORTING_WAY,"rated");
-//        }
+
     }
 
     /**

@@ -31,6 +31,14 @@ public class Movie implements Parcelable {
 
     private String isFavourite;
 
+    public boolean isFavourite(){
+        if ("Y".equals(isFavourite)){
+            return true;
+        }else {
+            return false;
+        }
+    }
+
     public int getId() {
         return id;
     }

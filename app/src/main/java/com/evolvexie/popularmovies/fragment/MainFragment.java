@@ -458,11 +458,7 @@ public class MainFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                 Log.d(TAG, "onLoadFinished: -----------bulkInsert : "+movies.size());
             }
         }
-        if (movies == null || movies.size() == 0) { // 没有加载出数据时，提示用户下拉刷新
-            if (curMovies == null || curMovies.size() == 0) {
-                // mRefreshTipDisplay.setVisibility(View.VISIBLE);
-            }
-        }
+
         isLoadingMore = false;
         mMainRecycleViewAdapter.changeLoadMoreStatus(BuildConfig.MAIN_PULLUP_LOAD_MORE);
 

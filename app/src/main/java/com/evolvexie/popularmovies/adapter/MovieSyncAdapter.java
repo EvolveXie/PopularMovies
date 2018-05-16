@@ -174,11 +174,11 @@ public class MovieSyncAdapter extends AbstractThreadedSyncAdapter {
                 for (Movie movie : movies) {
                     String movieId = String.valueOf(movie.getId());
                     if (currentPage == 1 && j == 0) {
-                        String bestMovieId = CommonPreferences.getDefaultSharedPreferenceValue(getContext(),
+                        String bestMovieId = CommonPreferences.getSettingPreferenceDataMutiMode(getContext(),
                                 bestMovieKey,
                                 "");
                         if ("".equals(bestMovieId) || !bestMovieId.equals(movieId)){ // 第一次需要写入，或者第一名变更
-                            CommonPreferences.setDefaultSharedPreferenceValue(getContext(),
+                            CommonPreferences.saveSettingPreferenceDataMutiMode(getContext(),
                                     bestMovieKey,
                                     String.valueOf(movieId));
                             if (!bestMovieId.equals(movieId) && !"".equals(bestMovieId)) { // 发送通知
